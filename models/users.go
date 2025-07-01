@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"weeklytickits/utils"
 
@@ -72,4 +73,22 @@ func Login(user Users) (Users, error) {
 		return Users{}, fmt.Errorf("password salah")
 	}
 	return dbUser, nil
+}
+
+func ChangePassword(userId int, newPassword string) error {
+	conn, err := utils.DBConnect()
+	if err != nil {
+		return err
+	}
+	query := `UPDATE users SET password = $1 WHERE user_id = $2`
+	result, err := conn.Exec(context.Background(), query, newPassword, userId)
+	if err != nil {
+		return err
+	}
+
+	if result.RowsAffected() == 0 {
+		return errors.New("user tidak ditemukan")
+	}
+
+	return nil
 }
