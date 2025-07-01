@@ -71,5 +71,5 @@ func Login(user Users) (Users, error) {
 	if user.Password != dbUser.Password {
 		return Users{}, fmt.Errorf("password salah")
 	}
-	return dbUser, err
+	return dbUser, nil
 }
