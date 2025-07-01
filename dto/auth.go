@@ -9,3 +9,6 @@ type RegisterResquest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
+type ChangePassword struct {
+	NewPassword string `json:"new-password"`
+}

@@ -110,3 +110,27 @@ func Login(ctx *gin.Context) {
 		Results: generateToken,
 	})
 }
+func ChangePassword(ctx *gin.Context) {
+	var req dto.ChangePassword
+	err := ctx.ShouldBind(&req)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.Response{
+			Success: false,
+			Message: "Invalid Data",
+		})
+		return
+	}
+	userId, _ := ctx.Get("userID")
+	err = models.ChangePassword(userId.(int), req.NewPassword)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.Response{
+			Success: false,
+			Message: "Failed change Password",
+		})
+		return
+	}
+	ctx.JSON(http.StatusCreated, utils.Response{
+		Success: true,
+		Message: "OK",
+	})
+}
