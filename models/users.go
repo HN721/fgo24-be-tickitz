@@ -95,3 +95,18 @@ func ChangePassword(userId int, newPassword string, oldPassword string) error {
 
 	return nil
 }
+func ForgetPassword(email string) error {
+	conn, err := utils.DBConnect()
+	if err != nil {
+		return err
+	}
+	var foundEmail string
+	query := `SELECT email FROM users WHERE email = $1`
+	err = conn.QueryRow(context.Background(), query, email).Scan(&foundEmail)
+	if err != nil {
+		return fmt.Errorf("email not found: %w", err)
+	}
+	// otp := services.GenerateOTP()
+
+	return nil
+}
