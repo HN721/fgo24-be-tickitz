@@ -55,22 +55,23 @@ func Register(user Users) error {
 func Login(user Users) (Users, error) {
 	conn, err := utils.DBConnect()
 	if err != nil {
-		return user, err
+		return Users{}, err
 	}
-	defer func() {
-		conn.Conn().Close(context.Background())
-	}()
+	defer conn.Conn().Close(context.Background())
+
 	var dbUser Users
-	query := `SELECT user_id, username, email, password FROM users WHERE email = $1`
+	query := `SELECT username, email, password, role FROM users WHERE email = $1`
 	err = conn.QueryRow(context.Background(), query, user.Email).
-		Scan(&dbUser.UserID, &dbUser.Username, &dbUser.Email, &dbUser.Password)
+		Scan(&dbUser.Username, &dbUser.Email, &dbUser.Password, &dbUser.Role)
 
 	if err != nil {
-		return Users{}, fmt.Errorf("email tidak ditemukan")
+		if err.Error() == "no rows in result set" {
+			return Users{}, fmt.Errorf("email tidak ditemukan")
+		}
+		return Users{}, err
 	}
 
-	err = services.ComparePassword(dbUser.Password, user.Password)
-	if err != nil {
+	if err := services.ComparePassword(dbUser.Password, user.Password); err != nil {
 		return Users{}, fmt.Errorf("password salah")
 	}
 
