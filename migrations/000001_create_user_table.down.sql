@@ -1,0 +1,2 @@
+-- Active: 1750554601825@@127.0.0.1@5434@movietar
+DROP COLUMN users

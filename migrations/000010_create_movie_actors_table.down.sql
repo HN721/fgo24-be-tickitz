@@ -1,0 +1,1 @@
+DROP COLUMN movie_actors

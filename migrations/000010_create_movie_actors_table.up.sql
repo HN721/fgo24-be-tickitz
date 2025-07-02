@@ -1,0 +1,5 @@
+CREATE TABLE movie_actors (
+    id VARCHAR(36) PRIMARY KEY,
+    movie_id VARCHAR(36) REFERENCES movies (id) ON DELETE CASCADE,
+    actor_id VARCHAR(36) REFERENCES actors (id) ON DELETE CASCADE
+);

@@ -1,0 +1,1 @@
+DROP COLUMN history_transaction
