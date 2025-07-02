@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"weeklytickits/services"
 	"weeklytickits/utils"
 
 	"github.com/jackc/pgx/v5"
@@ -106,7 +107,17 @@ func ForgetPassword(email string) error {
 	if err != nil {
 		return fmt.Errorf("email not found: %w", err)
 	}
-	// otp := services.GenerateOTP()
+	otp := services.GenerateOTP()
+
+	subject := "Yout OTP Reset PASSWORD"
+	body := fmt.Sprintf("<p>Your OTP is: <b>%s</b> </p>", otp)
+	err = services.SendEmail(email, subject, body)
+	if err != nil {
+		return fmt.Errorf("failed to send email: %w", err)
+	}
 
 	return nil
+}
+func SaveOTP(otp string) {
+	// save ke redis
 }
