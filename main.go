@@ -9,7 +9,6 @@ import (
 )
 
 func main() {
-
 	r := gin.Default()
 	routers.CombineRouter(r)
 	r.Run(fmt.Sprintf(":%s", os.Getenv("APP_PORT")))
