@@ -62,16 +62,24 @@ func Register(ctx *gin.Context) {
 		})
 		return
 	}
-	users := &models.Users{
+	if input.Password != input.ConfirmPassword {
+		ctx.JSON(http.StatusBadRequest, utils.Response{
+			Success: false,
+			Message: "Confirm",
+		})
+		return
+	}
+	users := models.Users{
 		Username: input.Username,
 		Email:    input.Email,
 		Password: input.Password,
 	}
-	err = models.Register(*users)
+	err = models.Register(users)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.Response{
 			Success: false,
 			Message: "Cant make User",
+			Error:   err.Error(),
 		})
 		return
 	}
@@ -91,15 +99,16 @@ func Login(ctx *gin.Context) {
 		})
 		return
 	}
-	users := &models.Users{
+	users := models.Users{
 		Email:    req.Email,
 		Password: req.Password,
 	}
-	result, err := models.Login(*users)
+	result, err := models.Login(users)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.Response{
 			Success: false,
 			Message: "Something Error",
+			Error:   err.Error(),
 		})
 		return
 	}
@@ -107,7 +116,8 @@ func Login(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, utils.Response{
 		Success: true,
 		Message: "ok",
-		Results: generateToken,
+		Results: users,
+		Token:   generateToken,
 	})
 }
 func ChangePassword(ctx *gin.Context) {
@@ -133,4 +143,25 @@ func ChangePassword(ctx *gin.Context) {
 		Success: true,
 		Message: "OK",
 	})
+}
+
+func ForgotPassword(ctx *gin.Context) {
+	var req struct {
+		Email string `json:"email" form:"email" binding:"required,email"`
+	}
+	ctx.ShouldBind(&req)
+	err := models.ForgetPassword(req.Email)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.Response{
+			Success: false,
+			Message: "Error",
+			Error:   err.Error(),
+		})
+	}
+	ctx.JSON(http.StatusOK, utils.Response{
+		Success: true,
+		Message: "OK",
+	})
+
 }
