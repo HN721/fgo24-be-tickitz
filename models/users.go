@@ -75,9 +75,12 @@ func Login(user Users) (Users, error) {
 	return dbUser, nil
 }
 
-func ChangePassword(userId int, newPassword string) error {
+func ChangePassword(userId int, newPassword string, oldPassword string) error {
 	conn, err := utils.DBConnect()
 	if err != nil {
+		return err
+	}
+	if newPassword == oldPassword {
 		return err
 	}
 	query := `UPDATE users SET password = $1 WHERE user_id = $2`
