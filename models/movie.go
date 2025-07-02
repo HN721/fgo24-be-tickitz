@@ -76,7 +76,29 @@ func UpdateMovies(movie Movies) error {
 		movie.Price,
 		movie.Id,
 	)
-
+	defer func() {
+		conn.Conn().Close(context.Background())
+	}()
 	return err
+
+}
+func DeleteMovies(movieId int) error {
+	conn, err := utils.DBConnect()
+	if err != nil {
+		return err
+	}
+	query := `DELETE FROM movies WHERE id =$1`
+	result, err := conn.Exec(context.Background(), query, movieId)
+	if err != nil {
+		return err
+	}
+
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("tidak ada movie dengan id %d", movieId)
+	}
+	defer func() {
+		conn.Conn().Close(context.Background())
+	}()
+	return nil
 
 }
