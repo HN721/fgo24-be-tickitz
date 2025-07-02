@@ -1,5 +1,0 @@
-CREATE TABLE movie_genre (
-    id VARCHAR(36) PRIMARY KEY,
-    movie_id VARCHAR(36) REFERENCES movies (id) ON DELETE CASCADE,
-    genre_id VARCHAR(36) REFERENCES genres (id) ON DELETE CASCADE
-);

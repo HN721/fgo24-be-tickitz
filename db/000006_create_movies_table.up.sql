@@ -1,5 +1,5 @@
 CREATE TABLE movies (
-    id VARCHAR(36) PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     title VARCHAR(100) NOT NULL,
     synopsis TEXT,
     background VARCHAR(255),

@@ -1,0 +1,5 @@
+CREATE TABLE directors (
+    id SERIAL PRIMARY KEY,
+    fullname VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

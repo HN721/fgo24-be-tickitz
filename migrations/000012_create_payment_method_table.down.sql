@@ -1,1 +1,0 @@
-DROP COLUMN payment_method

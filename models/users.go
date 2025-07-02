@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"fmt"
+	"time"
 	"weeklytickits/services"
 	"weeklytickits/utils"
 
@@ -78,7 +79,7 @@ func Login(user Users) (Users, error) {
 	return dbUser, nil
 }
 
-func ChangePassword(userId int, newPassword string, oldPassword string) error {
+func ChangePassword(userId int, OTP int, newPassword string, oldPassword string) error {
 	conn, err := utils.DBConnect()
 	if err != nil {
 		return err
@@ -92,7 +93,10 @@ func ChangePassword(userId int, newPassword string, oldPassword string) error {
 	if err != nil {
 		return fmt.Errorf("user tidak ditemukan")
 	}
-
+	client := utils.RedisClient
+	key := fmt.Sprintf("otp:%s", userId)
+	storedOTP, err := client.Get(context.Background(), key).Result()
+	fmt.Println(storedOTP)
 	err = services.ComparePassword(hashedPassword, oldPassword)
 	if err != nil {
 		return fmt.Errorf("password lama salah")
@@ -142,6 +146,12 @@ func ForgetPassword(email string) error {
 
 	return nil
 }
-func SaveOTP(otp string) {
-	// save ke redis
+func SaveOTP(userId int, otp string) error {
+	client := utils.RedisClient
+	key := fmt.Sprintf("otp:%s", userId)
+	err := client.Set(context.Background(), key, otp, 5*time.Minute).Err()
+	if err != nil {
+		return fmt.Errorf("failed to save OTP to Redis: %w", err)
+	}
+	return nil
 }

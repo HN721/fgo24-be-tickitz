@@ -1,5 +1,4 @@
--- Active: 1750554601825@@127.0.0.1@5434@movxtar
-
+-- Active: 1750554601825@@127.0.0.1@5434@tikcitz
 CREATE DATABASE movxtar;
 
 CREATE TABLE users (

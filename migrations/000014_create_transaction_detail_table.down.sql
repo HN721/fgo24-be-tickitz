@@ -1,1 +1,0 @@
-DROP COLUMN transaction_detail
