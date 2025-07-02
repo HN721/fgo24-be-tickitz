@@ -2,7 +2,6 @@ package models
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"weeklytickits/services"
 	"weeklytickits/utils"
@@ -42,11 +41,11 @@ func Register(user Users) error {
 	INSERT INTO users (username, email, password)
 	VALUES ($1, $2, $3)
 `
-
+	hash, err := services.HashPassword(user.Password)
 	_, err = conn.Exec(context.Background(), query,
 		user.Username,
 		user.Email,
-		user.Password,
+		hash,
 	)
 	defer func() {
 		conn.Conn().Close(context.Background())
@@ -70,9 +69,11 @@ func Login(user Users) (Users, error) {
 		return Users{}, fmt.Errorf("email tidak ditemukan")
 	}
 
-	if user.Password != dbUser.Password {
+	err = services.ComparePassword(dbUser.Password, user.Password)
+	if err != nil {
 		return Users{}, fmt.Errorf("password salah")
 	}
+
 	return dbUser, nil
 }
 
@@ -81,21 +82,43 @@ func ChangePassword(userId int, newPassword string, oldPassword string) error {
 	if err != nil {
 		return err
 	}
-	if newPassword == oldPassword {
-		return err
-	}
-	query := `UPDATE users SET password = $1 WHERE user_id = $2`
-	result, err := conn.Exec(context.Background(), query, newPassword, userId)
+	defer func() {
+		conn.Conn().Close(context.Background())
+	}()
+	var hashedPassword string
+	query := `SELECT password FROM users WHERE user_id = $1`
+	err = conn.QueryRow(context.Background(), query, userId).Scan(&hashedPassword)
 	if err != nil {
-		return err
+		return fmt.Errorf("user tidak ditemukan")
+	}
+
+	err = services.ComparePassword(hashedPassword, oldPassword)
+	if err != nil {
+		return fmt.Errorf("password lama salah")
+	}
+
+	if oldPassword == newPassword {
+		return fmt.Errorf("password baru tidak boleh sama dengan password lama")
+	}
+
+	newHashed, err := services.HashPassword(newPassword)
+	if err != nil {
+		return fmt.Errorf("gagal hash password baru: %v", err)
+	}
+
+	updateQuery := `UPDATE users SET password = $1 WHERE user_id = $2`
+	result, err := conn.Exec(context.Background(), updateQuery, newHashed, userId)
+	if err != nil {
+		return fmt.Errorf("gagal update password: %v", err)
 	}
 
 	if result.RowsAffected() == 0 {
-		return errors.New("user tidak ditemukan")
+		return fmt.Errorf("user tidak ditemukan")
 	}
 
 	return nil
 }
+
 func ForgetPassword(email string) error {
 	conn, err := utils.DBConnect()
 	if err != nil {
