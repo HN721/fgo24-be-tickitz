@@ -5,9 +5,10 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 type RegisterResquest struct {
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Username        string `json:"username"`
+	Email           string `json:"email"`
+	Password        string `json:"password"`
+	ConfirmPassword string `json:"confirm-password"`
 }
 type ChangePassword struct {
 	OldPassword string `json:"old-password"`
