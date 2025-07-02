@@ -131,7 +131,7 @@ func ChangePassword(ctx *gin.Context) {
 		return
 	}
 	userId, _ := ctx.Get("userID")
-	err = models.ChangePassword(userId.(int), req.NewPassword, req.OldPassword)
+	err = models.ChangePassword(userId.(int), 12, req.NewPassword, req.OldPassword)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.Response{
 			Success: false,
