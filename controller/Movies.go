@@ -102,3 +102,22 @@ func DeleteMovies(ctx *gin.Context) {
 		Message: "OK",
 	})
 }
+
+// Movies Genres
+
+func GetGenre(ctx *gin.Context) {
+	data, err := models.GenreMovies()
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.Response{
+			Success: false,
+			Message: "Error",
+			Error:   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, utils.Response{
+		Success: true,
+		Message: "OK",
+		Results: data,
+	})
+}
