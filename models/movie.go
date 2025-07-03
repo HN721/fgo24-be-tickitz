@@ -174,5 +174,27 @@ func UpdateGenre(genre Genres, genreId int) error {
 	if results.RowsAffected() == 0 {
 		return fmt.Errorf("movie with id %d not found", genreId)
 	}
+	defer func() {
+		conn.Conn().Close(context.Background())
+	}()
+	return err
+}
+func DeleteGenre(genreId int) error {
+	conn, err := utils.DBConnect()
+	if err != nil {
+		return err
+	}
+	query := `DELETE FROM genres WHERE id =$1`
+	result, err := conn.Exec(context.Background(), query, genreId)
+	if err != nil {
+		return err
+	}
+
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("tidak ada genre dengan id %d", genreId)
+	}
+	defer func() {
+		conn.Conn().Close(context.Background())
+	}()
 	return err
 }
