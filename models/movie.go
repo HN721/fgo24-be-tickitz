@@ -18,6 +18,9 @@ type Movies struct {
 	ReleaseDate time.Time ` json:"releaseDate" db:"release_date"`
 	Duration    int       `json:"duration" db:"duration"`
 	Price       int       `json:"price" db:"price"`
+	Genres      []string  `json:"genres" binding:"required"`
+	Casts       []string  `json:"casts" binding:"required"`
+	Directors   []string  `json:"directors" binding:"required"`
 }
 type Genres struct {
 	Id   int    `json:"id" db:"id"`
@@ -37,76 +40,163 @@ func GetUpcomingMovies() ([]Movies, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer conn.Release()
+	defer conn.Conn().Close(context.Background())
 
-	rows, err := conn.Query(context.Background(), `
-	SELECT id, title, synopsis, background, poster, release_date, duration, price
-	FROM movies
-	WHERE release_date > CURRENT_DATE
-	`)
+	query := `
+	SELECT 
+		m.id,
+		m.title,
+		m.synopsis,
+		m.background,
+		m.poster,
+		m.release_date,
+		m.duration,
+		m.price,
+		ARRAY_REMOVE(ARRAY_AGG(DISTINCT g.name), NULL) AS genres,
+		ARRAY_REMOVE(ARRAY_AGG(DISTINCT a.fullname), NULL) AS casts,
+		ARRAY_REMOVE(ARRAY_AGG(DISTINCT d.fullname), NULL) AS directors
+	FROM movies m
+	LEFT JOIN movie_genre mg ON m.id = mg.movie_id
+	LEFT JOIN genres g ON mg.genre_id = g.id
+	LEFT JOIN movie_actors ma ON m.id = ma.movie_id
+	LEFT JOIN actors a ON ma.actor_id = a.id
+	LEFT JOIN movie_director md ON m.id = md.movie_id
+	LEFT JOIN directors d ON md.director_id = d.id
+	WHERE m.release_date > CURRENT_DATE
+	GROUP BY m.id, m.title, m.synopsis, m.background, m.poster, m.release_date, m.duration, m.price
+	`
+
+	rows, err := conn.Query(context.Background(), query)
 	if err != nil {
 		return nil, err
 	}
+
 	results, err := pgx.CollectRows[Movies](rows, pgx.RowToStructByName)
 	return results, err
-
 }
 func GetAllMovies() ([]Movies, error) {
 	conn, err := utils.DBConnect()
 	if err != nil {
-
+		return nil, err
 	}
-	query := `SELECT id,title, synopsis, background, poster, release_date, duration, price FROM movies`
-	result, err := conn.Query(context.Background(), query)
-	data, err := pgx.CollectRows[Movies](result, pgx.RowToStructByName)
+	defer conn.Conn().Close(context.Background())
+
+	query := `
+	SELECT 
+    m.id,
+    m.title,
+    m.synopsis,
+    m.background,
+    m.poster,
+    m.release_date,
+    m.duration,
+    m.price,
+    ARRAY_REMOVE(ARRAY_AGG(DISTINCT g.name), NULL) AS genres,
+    ARRAY_REMOVE(ARRAY_AGG(DISTINCT a.fullname), NULL) AS casts,
+    ARRAY_REMOVE(ARRAY_AGG(DISTINCT d.fullname), NULL) AS directors
+FROM movies m
+LEFT JOIN movie_genre mg ON m.id = mg.movie_id
+LEFT JOIN genres g ON mg.genre_id = g.id
+LEFT JOIN movie_actors ma ON m.id = ma.movie_id
+LEFT JOIN actors a ON ma.actor_id = a.id
+LEFT JOIN movie_director md ON m.id = md.movie_id
+LEFT JOIN directors d ON md.director_id = d.id
+GROUP BY m.id, m.title, m.synopsis, m.background, m.poster, m.release_date, m.duration, m.price
+	`
+
+	rows, err := conn.Query(context.Background(), query)
 	if err != nil {
 		return nil, err
 	}
-	return data, nil
 
+	data, err := pgx.CollectRows[Movies](rows, pgx.RowToStructByName)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
 }
+
 func InsertMovies(movie Movies) error {
 	conn, err := utils.DBConnect()
 	if err != nil {
 		return err
 	}
+	defer conn.Conn().Close(context.Background())
+
 	if movie.Title == "" {
 		return fmt.Errorf("Judul Tidak Boleh Kosong")
 	}
-	query := `
+
+	tx, err := conn.Begin(context.Background())
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(context.Background())
+
+	var movieId int
+	err = tx.QueryRow(context.Background(), `
 		INSERT INTO movies (title, synopsis, background, poster, release_date, duration, price)
 		VALUES ($1, $2, $3, $4, $5, $6, $7)
-	`
+		RETURNING id
+	`, movie.Title, movie.Synopsis, movie.Background, movie.Poster, movie.ReleaseDate, movie.Duration, movie.Price).Scan(&movieId)
 
-	_, err = conn.Exec(context.Background(), query,
-		movie.Title,
-		movie.Synopsis,
-		movie.Background,
-		movie.Poster,
-		movie.ReleaseDate,
-		movie.Duration,
-		movie.Price,
-	)
-	defer func() {
-		conn.Conn().Close(context.Background())
-	}()
-	return err
+	if err != nil {
+		return fmt.Errorf("Gagal insert movie: %v", err)
+	}
+
+	for _, genreId := range movie.Genres {
+		_, err := tx.Exec(context.Background(), `
+			INSERT INTO movie_genre (movie_id, genre_id) VALUES ($1, $2)
+		`, movieId, genreId)
+		if err != nil {
+			return fmt.Errorf("Gagal insert movie_genre: %v", err)
+		}
+	}
+
+	for _, directorId := range movie.Directors {
+		_, err := tx.Exec(context.Background(), `
+			INSERT INTO movie_director (movie_id, director_id) VALUES ($1, $2)
+		`, movieId, directorId)
+		if err != nil {
+			return fmt.Errorf("Gagal insert movie_director: %v", err)
+		}
+	}
+
+	for _, actorId := range movie.Casts {
+		_, err := tx.Exec(context.Background(), `
+			INSERT INTO movie_actors (movie_id, actor_id) VALUES ($1, $2)
+		`, movieId, actorId)
+		if err != nil {
+			return fmt.Errorf("Gagal insert movie_actors: %v", err)
+		}
+	}
+
+	if err := tx.Commit(context.Background()); err != nil {
+		return fmt.Errorf("Gagal commit transaction: %v", err)
+	}
+
+	return nil
 }
+
 func UpdateMovies(movie Movies, movieId int) error {
 	conn, err := utils.DBConnect()
 	if err != nil {
 		return err
 	}
-	defer func() {
-		conn.Conn().Close(context.Background())
-	}()
+	defer conn.Conn().Close(context.Background())
+
+	tx, err := conn.Begin(context.Background())
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(context.Background())
 
 	query := `
-	UPDATE movies 
-	SET title = $1, synopsis = $2, background = $3, poster = $4, release_date = $5, duration = $6, price = $7
-	WHERE id = $8`
-
-	result, err := conn.Exec(context.Background(), query,
+		UPDATE movies 
+		SET title = $1, synopsis = $2, background = $3, poster = $4, release_date = $5, duration = $6, price = $7
+		WHERE id = $8`
+	result, err := tx.Exec(context.Background(), query,
 		movie.Title,
 		movie.Synopsis,
 		movie.Background,
@@ -119,9 +209,44 @@ func UpdateMovies(movie Movies, movieId int) error {
 	if err != nil {
 		return err
 	}
-
 	if result.RowsAffected() == 0 {
 		return fmt.Errorf("movie with id %d not found", movieId)
+	}
+
+	_, err = tx.Exec(context.Background(), `DELETE FROM movie_genre WHERE movie_id = $1`, movieId)
+	if err != nil {
+		return err
+	}
+	_, err = tx.Exec(context.Background(), `DELETE FROM movie_actors WHERE movie_id = $1`, movieId)
+	if err != nil {
+		return err
+	}
+	_, err = tx.Exec(context.Background(), `DELETE FROM movie_director WHERE movie_id = $1`, movieId)
+	if err != nil {
+		return err
+	}
+
+	for _, genreId := range movie.Genres {
+		_, err = tx.Exec(context.Background(), `INSERT INTO movie_genre (movie_id, genre_id) VALUES ($1, $2)`, movieId, genreId)
+		if err != nil {
+			return err
+		}
+	}
+	for _, actorId := range movie.Casts {
+		_, err = tx.Exec(context.Background(), `INSERT INTO movie_actors (movie_id, actor_id) VALUES ($1, $2)`, movieId, actorId)
+		if err != nil {
+			return err
+		}
+	}
+	for _, directorId := range movie.Directors {
+		_, err = tx.Exec(context.Background(), `INSERT INTO movie_director (movie_id, director_id) VALUES ($1, $2)`, movieId, directorId)
+		if err != nil {
+			return err
+		}
+	}
+
+	if err := tx.Commit(context.Background()); err != nil {
+		return err
 	}
 
 	return nil
@@ -148,7 +273,6 @@ func DeleteMovies(movieId int) error {
 
 }
 
-// genres
 func GenreMovies() ([]Genres, error) {
 	conn, err := utils.DBConnect()
 	if err != nil {
