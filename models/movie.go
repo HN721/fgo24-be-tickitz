@@ -46,6 +46,20 @@ func InsertMovies(movie Movies) error {
 	if movie.Title == "" {
 		return fmt.Errorf("Judul Tidak Boleh Kosong")
 	}
+	query := `
+		INSERT INTO movies (title, synopsis, background, poster, release_date, duration, price)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
+	`
+
+	_, err = conn.Exec(context.Background(), query,
+		movie.Title,
+		movie.Synopsis,
+		movie.Background,
+		movie.Poster,
+		movie.ReleaseDate,
+		movie.Duration,
+		movie.Price,
+	)
 	defer func() {
 		conn.Conn().Close(context.Background())
 	}()
@@ -119,4 +133,16 @@ func GenreMovies() ([]Genres, error) {
 	}
 	return data, nil
 
+}
+func CreateGenre(genre Genres) error {
+	conn, err := utils.DBConnect()
+	if err != nil {
+		return err
+	}
+	if genre.Name == "" {
+		return fmt.Errorf("Nama Tidak Boleh Kosong")
+	}
+	query := `INSERT INTO genres(name)VALUES($1)`
+	_, err = conn.Exec(context.Background(), query, genre.Name)
+	return err
 }
