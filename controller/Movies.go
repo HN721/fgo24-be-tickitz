@@ -231,7 +231,7 @@ func DeleteGenre(ctx *gin.Context) {
 }
 
 // Movies Actors
-func getActors(ctx *gin.Context) {
+func GetActors(ctx *gin.Context) {
 	data, err := models.ActorMovies()
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, utils.Response{
