@@ -19,6 +19,10 @@ type Movies struct {
 	Duration    int       `json:"duration" db:"duration"`
 	Price       int       `json:"price" db:"price"`
 }
+type Genres struct {
+	Id   int    `json:"id" db:"id"`
+	Name string `json:"name" db:"name"`
+}
 
 func GetAllMovies() ([]Movies, error) {
 	conn, err := utils.DBConnect()
@@ -100,5 +104,19 @@ func DeleteMovies(movieId int) error {
 		conn.Conn().Close(context.Background())
 	}()
 	return nil
+
+}
+func GenreMovies() ([]Genres, error) {
+	conn, err := utils.DBConnect()
+	if err != nil {
+		return nil, err
+	}
+	query := `SELECT id,name FROM genres`
+	result, err := conn.Query(context.Background(), query)
+	data, err := pgx.CollectRows[Genres](result, pgx.RowToStructByName)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 
 }

@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 	"weeklytickits/services"
 	"weeklytickits/utils"
@@ -79,7 +80,7 @@ func Login(user Users) (Users, error) {
 	return dbUser, nil
 }
 
-func ChangePassword(userId int, OTP int, newPassword string, oldPassword string) error {
+func ChangePassword(email string, OTP int, newPassword string, oldPassword string) error {
 	conn, err := utils.DBConnect()
 	if err != nil {
 		return err
@@ -88,15 +89,18 @@ func ChangePassword(userId int, OTP int, newPassword string, oldPassword string)
 		conn.Conn().Close(context.Background())
 	}()
 	var hashedPassword string
-	query := `SELECT password FROM users WHERE user_id = $1`
-	err = conn.QueryRow(context.Background(), query, userId).Scan(&hashedPassword)
+	query := `SELECT password FROM users WHERE email = $1`
+	err = conn.QueryRow(context.Background(), query, email).Scan(&hashedPassword)
 	if err != nil {
 		return fmt.Errorf("user tidak ditemukan")
 	}
 	client := utils.RedisClient
-	key := fmt.Sprintf("otp:%s", userId)
+	key := fmt.Sprintf("otp:%s", email)
 	storedOTP, err := client.Get(context.Background(), key).Result()
-	fmt.Println(storedOTP)
+	oldOtp, _ := strconv.Atoi(storedOTP)
+	if oldOtp != OTP {
+		return fmt.Errorf("Invalid OTP")
+	}
 	err = services.ComparePassword(hashedPassword, oldPassword)
 	if err != nil {
 		return fmt.Errorf("password lama salah")
@@ -111,8 +115,8 @@ func ChangePassword(userId int, OTP int, newPassword string, oldPassword string)
 		return fmt.Errorf("gagal hash password baru: %v", err)
 	}
 
-	updateQuery := `UPDATE users SET password = $1 WHERE user_id = $2`
-	result, err := conn.Exec(context.Background(), updateQuery, newHashed, userId)
+	updateQuery := `UPDATE users SET password = $1 WHERE email = $2`
+	result, err := conn.Exec(context.Background(), updateQuery, newHashed, email)
 	if err != nil {
 		return fmt.Errorf("gagal update password: %v", err)
 	}
@@ -136,9 +140,12 @@ func ForgetPassword(email string) error {
 		return fmt.Errorf("email not found: %w", err)
 	}
 	otp := services.GenerateOTP()
-
+	err = SaveOTP(email, otp)
+	if err != nil {
+		return err
+	}
 	subject := "Yout OTP Reset PASSWORD"
-	body := fmt.Sprintf("<p>Your OTP is: <b>%s</b> </p>", otp)
+	body := fmt.Sprintf("<p>Your OTP is: <b>%d</b> </p>", otp)
 	err = services.SendEmail(email, subject, body)
 	if err != nil {
 		return fmt.Errorf("failed to send email: %w", err)
@@ -146,9 +153,9 @@ func ForgetPassword(email string) error {
 
 	return nil
 }
-func SaveOTP(userId int, otp string) error {
+func SaveOTP(email string, otp int) error {
 	client := utils.RedisClient
-	key := fmt.Sprintf("otp:%s", userId)
+	key := fmt.Sprintf("otp:%s", email)
 	err := client.Set(context.Background(), key, otp, 5*time.Minute).Err()
 	if err != nil {
 		return fmt.Errorf("failed to save OTP to Redis: %w", err)
