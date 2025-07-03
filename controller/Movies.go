@@ -121,3 +121,30 @@ func GetGenre(ctx *gin.Context) {
 		Results: data,
 	})
 }
+func CreateGenres(ctx *gin.Context) {
+	var req models.Genres
+
+	err := ctx.ShouldBind(&req)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.Response{
+			Success: false,
+			Message: "Error",
+			Error:   err.Error(),
+		})
+		return
+	}
+	err = models.CreateGenre(req)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.Response{
+			Success: false,
+			Message: "Error",
+			Error:   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusCreated, utils.Response{
+		Success: true,
+		Message: "OK",
+		Results: req,
+	})
+}
