@@ -84,3 +84,21 @@ func UpdateMovies(ctx *gin.Context) {
 		Results: req,
 	})
 }
+func DeleteMovies(ctx *gin.Context) {
+	id := ctx.Param("id")
+	movieId, _ := strconv.Atoi(id)
+
+	err := models.DeleteMovies(movieId)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.Response{
+			Success: false,
+			Message: "Cannot delete Movie",
+			Error:   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusAccepted, utils.Response{
+		Success: true,
+		Message: "OK",
+	})
+}
