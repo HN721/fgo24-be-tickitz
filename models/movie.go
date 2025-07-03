@@ -23,7 +23,34 @@ type Genres struct {
 	Id   int    `json:"id" db:"id"`
 	Name string `json:"name" db:"name"`
 }
+type Actor struct {
+	Id   int    `json:"id" db:"id"`
+	Name string `json:"name" db:"name"`
+}
+type Directors struct {
+	Id   int    `json:"id" db:"id"`
+	Name string `json:"name" db:"name"`
+}
 
+func GetUpcomingMovies() ([]Movies, error) {
+	conn, err := utils.DBConnect()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Release()
+
+	rows, err := conn.Query(context.Background(), `
+	SELECT id, title, synopsis, background, poster, release_date, duration, price
+	FROM movies
+	WHERE release_date > CURRENT_DATE
+	`)
+	if err != nil {
+		return nil, err
+	}
+	results, err := pgx.CollectRows[Movies](rows, pgx.RowToStructByName)
+	return results, err
+
+}
 func GetAllMovies() ([]Movies, error) {
 	conn, err := utils.DBConnect()
 	if err != nil {
@@ -200,3 +227,158 @@ func DeleteGenre(genreId int) error {
 }
 
 // Actors
+func ActorMovies() ([]Actor, error) {
+	conn, err := utils.DBConnect()
+	if err != nil {
+		return nil, err
+	}
+	query := `SELECT id,fullname FROM actors`
+	result, err := conn.Query(context.Background(), query)
+	data, err := pgx.CollectRows[Actor](result, pgx.RowToStructByName)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		conn.Conn().Close(context.Background())
+	}()
+	return data, nil
+
+}
+func CreateActor(actor Actor) error {
+	conn, err := utils.DBConnect()
+	if err != nil {
+		return err
+	}
+	if actor.Name == "" {
+		return fmt.Errorf("Nama Tidak Boleh Kosong")
+	}
+	query := `INSERT INTO actors(fullname)VALUES($1)`
+	_, err = conn.Exec(context.Background(), query, actor.Name)
+	defer func() {
+		conn.Conn().Close(context.Background())
+	}()
+	return err
+}
+func UpdateActor(actor Actor, actorId int) error {
+	conn, err := utils.DBConnect()
+	if err != nil {
+		return err
+	}
+	if actor.Name == "" {
+		return fmt.Errorf("Nama Tidak Boleh Kosong")
+	}
+	query := `
+	UPDATE actors 
+	SET fullname = $1
+	WHERE id = $2`
+	results, err := conn.Exec(context.Background(), query, actor.Name, actorId)
+	if err != nil {
+		return err
+	}
+
+	if results.RowsAffected() == 0 {
+		return fmt.Errorf("movie with id %d not found", actorId)
+	}
+	defer func() {
+		conn.Conn().Close(context.Background())
+	}()
+	return err
+}
+func DeleteActor(actorId int) error {
+	conn, err := utils.DBConnect()
+	if err != nil {
+		return err
+	}
+	query := `DELETE FROM actors WHERE id =$1`
+	result, err := conn.Exec(context.Background(), query, actorId)
+	if err != nil {
+		return err
+	}
+
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("tidak ada actor dengan id %d", actorId)
+	}
+	defer func() {
+		conn.Conn().Close(context.Background())
+	}()
+	return err
+}
+
+// Directors
+
+func DirectorsMovie() ([]Directors, error) {
+	conn, err := utils.DBConnect()
+	if err != nil {
+		return nil, err
+	}
+	query := `SELECT id,fullname FROM directors`
+	result, err := conn.Query(context.Background(), query)
+	data, err := pgx.CollectRows[Directors](result, pgx.RowToStructByName)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		conn.Conn().Close(context.Background())
+	}()
+	return data, nil
+
+}
+func CreateDirector(director Directors) error {
+	conn, err := utils.DBConnect()
+	if err != nil {
+		return err
+	}
+	if director.Name == "" {
+		return fmt.Errorf("Nama Tidak Boleh Kosong")
+	}
+	query := `INSERT INTO directors(fullname)VALUES($1)`
+	_, err = conn.Exec(context.Background(), query, director.Name)
+	defer func() {
+		conn.Conn().Close(context.Background())
+	}()
+	return err
+}
+func UpdateDirector(director Directors, directorId int) error {
+	conn, err := utils.DBConnect()
+	if err != nil {
+		return err
+	}
+	if director.Name == "" {
+		return fmt.Errorf("Nama Tidak Boleh Kosong")
+	}
+	query := `
+	UPDATE directors 
+	SET fullname = $1
+	WHERE id = $2`
+	results, err := conn.Exec(context.Background(), query, director.Name, directorId)
+	if err != nil {
+		return err
+	}
+
+	if results.RowsAffected() == 0 {
+		return fmt.Errorf("director with id %d not found", directorId)
+	}
+	defer func() {
+		conn.Conn().Close(context.Background())
+	}()
+	return err
+}
+func DeleteDirector(directorId int) error {
+	conn, err := utils.DBConnect()
+	if err != nil {
+		return err
+	}
+	query := `DELETE FROM directors WHERE id =$1`
+	result, err := conn.Exec(context.Background(), query, directorId)
+	if err != nil {
+		return err
+	}
+
+	if result.RowsAffected() == 0 {
+		return fmt.Errorf("tidak ada director dengan id %d", directorId)
+	}
+	defer func() {
+		conn.Conn().Close(context.Background())
+	}()
+	return err
+}

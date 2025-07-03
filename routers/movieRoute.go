@@ -7,6 +7,8 @@ import (
 )
 
 func movieRoute(r *gin.RouterGroup) {
+	r.GET("/upcoming", controller.GetUpcomingMovies)
+
 	r.GET("", controller.GetMovies)
 	r.POST("", controller.CreateMovies)
 	r.PATCH("/:id", controller.UpdateMovies)
