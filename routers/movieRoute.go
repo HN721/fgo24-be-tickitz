@@ -14,6 +14,7 @@ func movieRoute(r *gin.RouterGroup) {
 	// genre
 	r.GET("/genre", controller.GetGenre)
 	r.POST("/genre", controller.CreateGenres)
-	r.PATCH("/genre", controller.UpdateGenre)
+	r.PATCH("/genre/:id", controller.UpdateGenre)
+	r.DELETE("/genre/:id", controller.DeleteGenre)
 
 }
