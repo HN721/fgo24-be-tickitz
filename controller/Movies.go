@@ -319,3 +319,93 @@ func DeleteActor(ctx *gin.Context) {
 		Message: "OK",
 	})
 }
+
+// Movies Director
+func GetDirector(ctx *gin.Context) {
+	data, err := models.DirectorsMovie()
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.Response{
+			Success: false,
+			Message: "Error",
+			Error:   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, utils.Response{
+		Success: true,
+		Message: "OK",
+		Results: data,
+	})
+}
+func CreateDirector(ctx *gin.Context) {
+	var req models.Directors
+
+	err := ctx.ShouldBind(&req)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.Response{
+			Success: false,
+			Message: "Error",
+			Error:   err.Error(),
+		})
+		return
+	}
+	err = models.CreateDirector(req)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.Response{
+			Success: false,
+			Message: "Error",
+			Error:   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusCreated, utils.Response{
+		Success: true,
+		Message: "OK",
+		Results: req,
+	})
+}
+func UpdateDirector(ctx *gin.Context) {
+	var req models.Directors
+	id := ctx.Param("id")
+	directorId, _ := strconv.Atoi(id)
+	err := ctx.ShouldBind(&req)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.Response{
+			Success: false,
+			Message: "Error",
+			Error:   err.Error(),
+		})
+		return
+	}
+	err = models.UpdateDirector(req, directorId)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.Response{
+			Success: false,
+			Message: "Error",
+			Error:   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, utils.Response{
+		Success: true,
+		Message: "OK",
+		Results: req,
+	})
+}
+func DeleteDirector(ctx *gin.Context) {
+	id := ctx.Param("id")
+	directorId, _ := strconv.Atoi(id)
+	err := models.DeleteDirector(directorId)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.Response{
+			Success: false,
+			Message: "Error",
+			Error:   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, utils.Response{
+		Success: true,
+		Message: "OK",
+	})
+}
