@@ -176,3 +176,20 @@ func UpdateGenre(ctx *gin.Context) {
 		Results: req,
 	})
 }
+func DeleteGenre(ctx *gin.Context) {
+	id := ctx.Param("id")
+	genreId, _ := strconv.Atoi(id)
+	err := models.DeleteGenre(genreId)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.Response{
+			Success: false,
+			Message: "Error",
+			Error:   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, utils.Response{
+		Success: true,
+		Message: "OK",
+	})
+}
