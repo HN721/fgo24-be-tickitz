@@ -229,3 +229,93 @@ func DeleteGenre(ctx *gin.Context) {
 		Message: "OK",
 	})
 }
+
+// Movies Actors
+func getActors(ctx *gin.Context) {
+	data, err := models.ActorMovies()
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.Response{
+			Success: false,
+			Message: "Error",
+			Error:   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, utils.Response{
+		Success: true,
+		Message: "OK",
+		Results: data,
+	})
+}
+func CreateActor(ctx *gin.Context) {
+	var req models.Actor
+
+	err := ctx.ShouldBind(&req)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.Response{
+			Success: false,
+			Message: "Error",
+			Error:   err.Error(),
+		})
+		return
+	}
+	err = models.CreateActor(req)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.Response{
+			Success: false,
+			Message: "Error",
+			Error:   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusCreated, utils.Response{
+		Success: true,
+		Message: "OK",
+		Results: req,
+	})
+}
+func UpdateActor(ctx *gin.Context) {
+	var req models.Actor
+	id := ctx.Param("id")
+	actorId, _ := strconv.Atoi(id)
+	err := ctx.ShouldBind(&req)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.Response{
+			Success: false,
+			Message: "Error",
+			Error:   err.Error(),
+		})
+		return
+	}
+	err = models.UpdateActor(req, actorId)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.Response{
+			Success: false,
+			Message: "Error",
+			Error:   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, utils.Response{
+		Success: true,
+		Message: "OK",
+		Results: req,
+	})
+}
+func DeleteActor(ctx *gin.Context) {
+	id := ctx.Param("id")
+	actorId, _ := strconv.Atoi(id)
+	err := models.DeleteActor(actorId)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.Response{
+			Success: false,
+			Message: "Error",
+			Error:   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, utils.Response{
+		Success: true,
+		Message: "OK",
+	})
+}
