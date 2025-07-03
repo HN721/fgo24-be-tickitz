@@ -13,7 +13,14 @@ import (
 type TMDbResponse struct {
 	Results []MovieResult `json:"results"`
 }
+type GenreResponse struct {
+	Genres []Genre `json:"genres"`
+}
 
+type Genre struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
 type MovieResult struct {
 	ID          int    `json:"id"`
 	Title       string `json:"title"`
@@ -54,7 +61,7 @@ func GetMovieDuration(movieID int) (int, error) {
 }
 
 func FetchMovie() error {
-	url := "https://api.themoviedb.org/3/movie/now_playing?language=en-US&page=1"
+	url := "https://api.themoviedb.org/3/movie/upcoming?language=en-US&page=1"
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -111,6 +118,57 @@ func FetchMovie() error {
 			fmt.Printf("Gagal insert: %s\n", err)
 		} else {
 			fmt.Printf("Berhasil insert: %s\n", movie.Title)
+		}
+	}
+
+	return nil
+}
+func FetchGenres() ([]Genre, error) {
+	url := "https://api.themoviedb.org/3/genre/movie/list?language=en"
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("accept", "application/json")
+	req.Header.Add("Authorization", "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI2MmVhOGUwYjY1MGIyMDJkMTRlYmI1MjI5ZGQwZmRmOSIsIm5iZiI6MTc0NzM3Njk3NC42OTUwMDAyLCJzdWIiOiI2ODI2ZGI0ZTkxMTY1ZjYzYmE2ZWZjODAiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.UVz4N682u9la2B2SkINIeIYfKNJm8lvWBUzLCrs-3Wo")
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	body, _ := io.ReadAll(res.Body)
+
+	var response GenreResponse
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println(response.Genres)
+	return response.Genres, nil
+}
+func FetchAndSaveGenres() error {
+	genres, err := FetchGenres()
+	if err != nil {
+		return err
+	}
+
+	conn, err := utils.DBConnect()
+	if err != nil {
+		return err
+	}
+	defer conn.Conn().Close(context.Background())
+
+	for _, genre := range genres {
+		query := `INSERT INTO genres (name) VALUES ($1)`
+		_, err := conn.Exec(context.Background(), query, genre.Name)
+		if err != nil {
+			fmt.Printf("Gagal insert genre %s: %v\n", genre.Name, err)
+		} else {
+			fmt.Printf("Berhasil insert genre: %s\n", genre.Name)
 		}
 	}
 
