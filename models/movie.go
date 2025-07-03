@@ -198,3 +198,5 @@ func DeleteGenre(genreId int) error {
 	}()
 	return err
 }
+
+// Actors

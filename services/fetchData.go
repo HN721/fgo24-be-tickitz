@@ -10,6 +10,13 @@ import (
 	"weeklytickits/utils"
 )
 
+type ActorResponse struct {
+	Results []ActorResult `json:"results"`
+}
+
+type ActorResult struct {
+	Name string `json:"name"`
+}
 type TMDbResponse struct {
 	Results []MovieResult `json:"results"`
 }
@@ -169,6 +176,60 @@ func FetchAndSaveGenres() error {
 			fmt.Printf("Gagal insert genre %s: %v\n", genre.Name, err)
 		} else {
 			fmt.Printf("Berhasil insert genre: %s\n", genre.Name)
+		}
+	}
+
+	return nil
+}
+func FetchActors() ([]ActorResult, error) {
+	url := "https://api.themoviedb.org/3/person/popular?language=en-US&page=1"
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("accept", "application/json")
+	req.Header.Add("Authorization", "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI2MmVhOGUwYjY1MGIyMDJkMTRlYmI1MjI5ZGQwZmRmOSIsIm5iZiI6MTc0NzM3Njk3NC42OTUwMDAyLCJzdWIiOiI2ODI2ZGI0ZTkxMTY1ZjYzYmE2ZWZjODAiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.UVz4N682u9la2B2SkINIeIYfKNJm8lvWBUzLCrs-3Wo")
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	body, _ := io.ReadAll(res.Body)
+
+	var response ActorResponse
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Printf("Actors: %+v\n", response.Results)
+
+	return response.Results, nil
+}
+
+func FetchAndSaveActor() error {
+	actors, err := FetchActors()
+	if err != nil {
+		return err
+	}
+
+	conn, err := utils.DBConnect()
+	if err != nil {
+		return err
+	}
+	defer conn.Conn().Close(context.Background())
+
+	for _, actor := range actors {
+		query := `INSERT INTO actors (fullname) VALUES ($1)`
+		_, err := conn.Exec(context.Background(), query, actor.Name)
+		if err != nil {
+			fmt.Printf("Gagal insert actor %s: %v\n", actor.Name, err)
+		} else {
+			fmt.Printf("Berhasil insert actor: %s\n", actor.Name)
 		}
 	}
 
