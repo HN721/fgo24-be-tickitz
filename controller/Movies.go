@@ -148,3 +148,31 @@ func CreateGenres(ctx *gin.Context) {
 		Results: req,
 	})
 }
+func UpdateGenre(ctx *gin.Context) {
+	var req models.Genres
+	id := ctx.Param("id")
+	genreId, _ := strconv.Atoi(id)
+	err := ctx.ShouldBind(&req)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.Response{
+			Success: false,
+			Message: "Error",
+			Error:   err.Error(),
+		})
+		return
+	}
+	err = models.UpdateGenre(req, genreId)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.Response{
+			Success: false,
+			Message: "Error",
+			Error:   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, utils.Response{
+		Success: true,
+		Message: "OK",
+		Results: req,
+	})
+}
