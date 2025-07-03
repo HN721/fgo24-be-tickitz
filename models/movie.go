@@ -120,6 +120,8 @@ func DeleteMovies(movieId int) error {
 	return nil
 
 }
+
+// genres
 func GenreMovies() ([]Genres, error) {
 	conn, err := utils.DBConnect()
 	if err != nil {
@@ -131,6 +133,9 @@ func GenreMovies() ([]Genres, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		conn.Conn().Close(context.Background())
+	}()
 	return data, nil
 
 }
@@ -144,5 +149,30 @@ func CreateGenre(genre Genres) error {
 	}
 	query := `INSERT INTO genres(name)VALUES($1)`
 	_, err = conn.Exec(context.Background(), query, genre.Name)
+	defer func() {
+		conn.Conn().Close(context.Background())
+	}()
+	return err
+}
+func UpdateGenre(genre Genres, genreId int) error {
+	conn, err := utils.DBConnect()
+	if err != nil {
+		return err
+	}
+	if genre.Name == "" {
+		return fmt.Errorf("Nama Tidak Boleh Kosong")
+	}
+	query := `
+	UPDATE genres 
+	SET name = $1
+	WHERE id = $2`
+	results, err := conn.Exec(context.Background(), query, genre.Name, genreId)
+	if err != nil {
+		return err
+	}
+
+	if results.RowsAffected() == 0 {
+		return fmt.Errorf("movie with id %d not found", genreId)
+	}
 	return err
 }
