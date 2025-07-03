@@ -2,6 +2,7 @@ package controller
 
 import (
 	"net/http"
+	"strconv"
 	"weeklytickits/models"
 	"weeklytickits/utils"
 
@@ -48,6 +49,36 @@ func CreateMovies(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusCreated, utils.Response{
+		Success: true,
+		Message: "OK",
+		Results: req,
+	})
+}
+func UpdateMovies(ctx *gin.Context) {
+	var req models.Movies
+	id := ctx.Param("id")
+	movieId, _ := strconv.Atoi(id)
+
+	err := ctx.ShouldBind(&req)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.Response{
+			Success: false,
+			Message: "Error While INput",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	err = models.UpdateMovies(req, movieId)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.Response{
+			Success: false,
+			Message: "Error in Database",
+			Error:   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusAccepted, utils.Response{
 		Success: true,
 		Message: "OK",
 		Results: req,
