@@ -74,6 +74,46 @@ func GetUpcomingMovies() ([]Movies, error) {
 	results, err := pgx.CollectRows[Movies](rows, pgx.RowToStructByName)
 	return results, err
 }
+func NowShowingMovies() ([]Movies, error) {
+	conn, err := utils.DBConnect()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Conn().Close(context.Background())
+
+	query := `
+	SELECT 
+		m.id,
+		m.title,
+		m.synopsis,
+		m.background,
+		m.poster,
+		m.release_date,
+		m.duration,
+		m.price,
+		ARRAY_REMOVE(ARRAY_AGG(DISTINCT g.name), NULL) AS genres,
+		ARRAY_REMOVE(ARRAY_AGG(DISTINCT a.fullname), NULL) AS casts,
+		ARRAY_REMOVE(ARRAY_AGG(DISTINCT d.fullname), NULL) AS directors
+	FROM movies m
+	LEFT JOIN movie_genre mg ON m.id = mg.movie_id
+	LEFT JOIN genres g ON mg.genre_id = g.id
+	LEFT JOIN movie_actors ma ON m.id = ma.movie_id
+	LEFT JOIN actors a ON ma.actor_id = a.id
+	LEFT JOIN movie_director md ON m.id = md.movie_id
+	LEFT JOIN directors d ON md.director_id = d.id
+	WHERE m.release_date < CURRENT_DATE
+	GROUP BY m.id, m.title, m.synopsis, m.background, m.poster, m.release_date, m.duration, m.price
+	`
+
+	rows, err := conn.Query(context.Background(), query)
+	if err != nil {
+		return nil, err
+	}
+
+	results, err := pgx.CollectRows[Movies](rows, pgx.RowToStructByName)
+	return results, err
+}
+
 func GetAllMovies() ([]Movies, error) {
 	conn, err := utils.DBConnect()
 	if err != nil {

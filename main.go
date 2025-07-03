@@ -11,8 +11,8 @@ import (
 
 func main() {
 	godotenv.Load()
+
 	r := gin.Default()
-	r.MaxMultipartMemory = 8 << 20 // 8 MiB
 
 	routers.CombineRouter(r)
 	r.Run(fmt.Sprintf(":%s", os.Getenv("APP_PORT")))

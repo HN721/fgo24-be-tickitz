@@ -8,6 +8,9 @@ import (
 	"net/http"
 	"time"
 	"weeklytickits/utils"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type DirectorResponse struct {
@@ -15,6 +18,8 @@ type DirectorResponse struct {
 }
 
 type DirectorResult struct {
+	ID int `json:"id"`
+
 	Name string `json:"name"`
 }
 type ActorResponse struct {
@@ -22,6 +27,8 @@ type ActorResponse struct {
 }
 
 type ActorResult struct {
+	ID int `json:"id"`
+
 	Name string `json:"name"`
 }
 type TMDbResponse struct {
@@ -73,15 +80,39 @@ func GetMovieDuration(movieID int) (int, error) {
 
 	return detail.Runtime, nil
 }
+func getGenres(conn *pgxpool.Conn) ([]Genre, error) {
+	rows, err := conn.Query(context.Background(), "SELECT id, name FROM genres")
+	if err != nil {
+		return nil, err
+	}
+	return pgx.CollectRows(rows, pgx.RowToStructByName[Genre])
+}
+
+func getActors(conn *pgxpool.Conn) ([]ActorResult, error) {
+	rows, err := conn.Query(context.Background(), "SELECT id, fullname as name FROM actors")
+	if err != nil {
+		return nil, err
+	}
+	return pgx.CollectRows(rows, pgx.RowToStructByName[ActorResult])
+}
+
+func getDirectors(conn *pgxpool.Conn) ([]DirectorResult, error) {
+	rows, err := conn.Query(context.Background(), "SELECT id, fullname as name FROM directors")
+	if err != nil {
+		return nil, err
+	}
+	return pgx.CollectRows(rows, pgx.RowToStructByName[DirectorResult])
+}
 
 func FetchMovie() error {
-	url := "https://api.themoviedb.org/3/movie/upcoming?language=en-US&page=1"
-
-	req, err := http.NewRequest("GET", url, nil)
+	conn, err := utils.DBConnect()
 	if err != nil {
 		return err
 	}
+	defer conn.Release()
 
+	url := "https://api.themoviedb.org/3/movie/upcoming?language=en-US&page=1"
+	req, _ := http.NewRequest("GET", url, nil)
 	req.Header.Add("accept", "application/json")
 	req.Header.Add("Authorization", "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI2MmVhOGUwYjY1MGIyMDJkMTRlYmI1MjI5ZGQwZmRmOSIsIm5iZiI6MTc0NzM3Njk3NC42OTUwMDAyLCJzdWIiOiI2ODI2ZGI0ZTkxMTY1ZjYzYmE2ZWZjODAiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.UVz4N682u9la2B2SkINIeIYfKNJm8lvWBUzLCrs-3Wo")
 
@@ -94,49 +125,74 @@ func FetchMovie() error {
 	body, _ := io.ReadAll(res.Body)
 
 	var response TMDbResponse
-	err = json.Unmarshal(body, &response)
-	if err != nil {
+	if err := json.Unmarshal(body, &response); err != nil {
 		return err
 	}
 
-	conn, err := utils.DBConnect()
+	genres, err := getGenres(conn)
 	if err != nil {
 		return err
 	}
-	defer conn.Conn().Close(context.Background())
+	actors, err := getActors(conn)
+	if err != nil {
+		return err
+	}
+	directors, err := getDirectors(conn)
+	if err != nil {
+		return err
+	}
 
 	for _, movie := range response.Results {
 		duration, err := GetMovieDuration(movie.ID)
 		if err != nil || duration <= 0 {
 			duration = 120
 		}
-		releaseDate, err := time.Parse("2006-01-02", movie.ReleaseDate)
-		if err != nil {
-			releaseDate = time.Now()
-		}
 
+		releaseDate, _ := time.Parse("2006-01-02", movie.ReleaseDate)
+
+		var movieID int
 		query := `
 		INSERT INTO movies (title, synopsis, background, poster, release_date, duration, price)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)`
-
-		_, err = conn.Exec(context.Background(), query,
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
+		RETURNING id`
+		err = conn.QueryRow(context.Background(), query,
 			movie.Title,
 			movie.Overview,
 			"https://image.tmdb.org/t/p/original"+movie.Backdrop,
 			"https://image.tmdb.org/t/p/original"+movie.Poster,
 			releaseDate,
 			duration,
-			50000)
+			50000,
+		).Scan(&movieID)
 
 		if err != nil {
-			fmt.Printf("Gagal insert: %s\n", err)
-		} else {
-			fmt.Printf("Berhasil insert: %s\n", movie.Title)
+			fmt.Printf("Gagal insert movie %s: %v\n", movie.Title, err)
+			continue
+		}
+		fmt.Printf("Berhasil insert movie: %s (ID: %d)\n", movie.Title, movieID)
+
+		for i, g := range genres {
+			if i >= 2 {
+				break
+			}
+			conn.Exec(context.Background(), "INSERT INTO movie_genre (movie_id, genre_id) VALUES ($1, $2)", movieID, g.ID)
+		}
+
+		for i, a := range actors {
+			if i >= 3 {
+				break
+			}
+			conn.Exec(context.Background(), "INSERT INTO movie_actors (movie_id, actor_id) VALUES ($1, $2)", movieID, a.ID)
+		}
+
+		if len(directors) > 0 {
+			conn.Exec(context.Background(), "INSERT INTO movie_director (movie_id, director_id) VALUES ($1, $2)", movieID, directors[0].ID)
 		}
 	}
 
 	return nil
 }
+
 func FetchGenres() ([]Genre, error) {
 	url := "https://api.themoviedb.org/3/genre/movie/list?language=en"
 

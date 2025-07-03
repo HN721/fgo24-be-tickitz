@@ -27,6 +27,24 @@ func GetUpcomingMovies(ctx *gin.Context) {
 	})
 
 }
+func GetNowShoinfMovies(ctx *gin.Context) {
+	data, err := models.NowShowingMovies()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.Response{
+			Success: false,
+			Message: "Gagal mengambil data film",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, utils.Response{
+		Success: true,
+		Message: "OK",
+		Results: data,
+	})
+
+}
 func GetMovies(ctx *gin.Context) {
 	data, err := models.GetAllMovies()
 	if err != nil {
