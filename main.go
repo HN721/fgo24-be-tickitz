@@ -14,6 +14,6 @@ func main() {
 	godotenv.Load()
 	r := gin.Default()
 	routers.CombineRouter(r)
-	services.FetchAndSaveActor()
+	services.FetchAndSaveDirector()
 	r.Run(fmt.Sprintf(":%s", os.Getenv("APP_PORT")))
 }
