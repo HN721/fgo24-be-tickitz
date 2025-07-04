@@ -1,5 +1,23 @@
 definitions:
+  dto.RegisterResquest:
+    properties:
+      confirm-password:
+        type: string
+      email:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
   models.Actor:
+    properties:
+      fullname:
+        type: string
+      id:
+        type: integer
+    type: object
+  models.Directors:
     properties:
       fullname:
         type: string
@@ -48,6 +66,23 @@ definitions:
     - directors
     - genres
     type: object
+  models.Users:
+    properties:
+      email:
+        type: string
+      image:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+      role:
+        type: string
+      userId:
+        type: integer
+      username:
+        type: string
+    type: object
   utils.Response:
     properties:
       error:
@@ -66,6 +101,61 @@ info:
   title: fgo24-be-tickitz
   version: "1.0"
 paths:
+  /auth:
+    get:
+      description: Retrieve all users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                results:
+                  items:
+                    $ref: '#/definitions/models.Users'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get User
+      tags:
+      - Auth
+  /auth/register:
+    post:
+      description: Retrieve Post users
+      parameters:
+      - description: User Data
+        in: body
+        name: Register
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegisterResquest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                results:
+                  items:
+                    $ref: '#/definitions/models.Users'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Post User
+      tags:
+      - Auth
   /movie:
     get:
       description: Retrieve all movies
@@ -302,6 +392,116 @@ paths:
       summary: Update Actor
       tags:
       - Actors
+  /movie/director:
+    get:
+      description: Retrieve all director
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                results:
+                  items:
+                    $ref: '#/definitions/models.Directors'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get Director
+      tags:
+      - Directors
+    post:
+      consumes:
+      - application/json
+      description: Admin create Directors
+      parameters:
+      - description: Director Data
+        in: body
+        name: movie
+        required: true
+        schema:
+          $ref: '#/definitions/models.Directors'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - Token: []
+      summary: Create Directors
+      tags:
+      - Directors
+  /movie/director/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Admin Delete Directors
+      parameters:
+      - description: Director ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - Token: []
+      summary: Delete Directors
+      tags:
+      - Directors
+    patch:
+      consumes:
+      - application/json
+      description: Admin Update Directors
+      parameters:
+      - description: Director Data
+        in: body
+        name: movie
+        required: true
+        schema:
+          $ref: '#/definitions/models.Directors'
+      - description: Director ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - Token: []
+      summary: Update Directors
+      tags:
+      - Directors
   /movie/genre:
     get:
       description: Retrieve all Genre

@@ -466,6 +466,14 @@ func DeleteActor(ctx *gin.Context) {
 }
 
 // Movies Director
+// Movies Director
+// @Summary Get Director
+// @Description Retrieve all director
+// @Tags Directors
+// @Produce json
+// @Success 200 {object} utils.Response{results=[]models.Directors}
+// @Failure 400 {object} utils.Response
+// @Router /movie/director [get]
 func GetDirector(ctx *gin.Context) {
 	data, err := models.DirectorsMovie()
 	if err != nil {
@@ -482,6 +490,17 @@ func GetDirector(ctx *gin.Context) {
 		Results: data,
 	})
 }
+
+// @Summary Create Directors
+// @Description Admin create Directors
+// @Tags Directors
+// @Produce json
+// @Accept json
+// @Param movie body models.Directors true "Director Data"
+// @Success 200 {object} utils.Response
+// @Failure 500 {object} utils.Response
+// @Security Token
+// @Router /movie/director [post]
 func CreateDirector(ctx *gin.Context) {
 	var req models.Directors
 
@@ -509,6 +528,18 @@ func CreateDirector(ctx *gin.Context) {
 		Results: req,
 	})
 }
+
+// @Summary Update Directors
+// @Description Admin Update Directors
+// @Tags Directors
+// @Produce json
+// @Accept json
+// @Param movie body models.Directors true "Director Data"
+// @Param id path int true "Director ID"
+// @Success 200 {object} utils.Response
+// @Failure 500 {object} utils.Response
+// @Security Token
+// @Router /movie/director/{id} [patch]
 func UpdateDirector(ctx *gin.Context) {
 	var req models.Directors
 	id := ctx.Param("id")
@@ -537,6 +568,17 @@ func UpdateDirector(ctx *gin.Context) {
 		Results: req,
 	})
 }
+
+// @Summary Delete Directors
+// @Description Admin Delete Directors
+// @Tags Directors
+// @Produce json
+// @Accept json
+// @Param id path int true "Director ID"
+// @Success 200 {object} utils.Response
+// @Failure 500 {object} utils.Response
+// @Security Token
+// @Router /movie/director/{id} [delete]
 func DeleteDirector(ctx *gin.Context) {
 	id := ctx.Param("id")
 	directorId, _ := strconv.Atoi(id)

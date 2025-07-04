@@ -28,21 +28,24 @@ func CreateToken(username string, role string, id int) (string, error) {
 	}
 	return tokenString, nil
 }
+
+// Get User
+// @Summary Get User
+// @Description Retrieve all users
+// @Tags Auth
+// @Produce json
+// @Success 200 {object} utils.Response{results=[]models.Users}
+// @Failure 400 {object} utils.Response
+// @Router /auth [get]
 func GetUser(ctx *gin.Context) {
-	var input models.Users
-	err := ctx.ShouldBind(&input)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, utils.Response{
-			Success: false,
-			Message: "Invalid Input",
-		})
-	}
 	result, err := models.FindAllUser()
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.Response{
 			Success: false,
 			Message: "Something Wrong On Database",
+			Error:   err.Error(),
 		})
+		return
 	}
 	ctx.JSON(http.StatusOK, utils.Response{
 		Success: true,
@@ -51,6 +54,15 @@ func GetUser(ctx *gin.Context) {
 	})
 }
 
+// Post User
+// @Summary Post User
+// @Description Retrieve Post users
+// @Tags Auth
+// @Produce json
+// @Param Register body dto.RegisterResquest true "User Data"
+// @Success 200 {object} utils.Response{results=[]models.Users}
+// @Failure 400 {object} utils.Response
+// @Router /auth/register [post]
 func Register(ctx *gin.Context) {
 	var input dto.RegisterResquest
 

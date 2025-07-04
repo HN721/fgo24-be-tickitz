@@ -12,26 +12,37 @@ import (
 )
 
 type Users struct {
-	UserID       int    `json:"userId" db:"user_id"`
+	UserID       int    `json:"userId" db:"id"`
 	Username     string `json:"username" form:"username"`
-	Phone_number string `json:"phone" form:"phone"`
-	Email        string `json:"email" form:"email"`
-	Image        string `json:"image" form:"image"`
-	Password     string `json:"password" form:"password"`
-	Role         string `json:"role" form:"role"`
+	Phone_number string `json:"phone,omitempty" form:"phone"`
+	Email        string `json:"email,omitempty" form:"email"`
+	Image        string `json:"image,omitempty" form:"image"`
+	Password     string `json:"password ,omitempty" form:"password"`
+	Role         string `json:"role ,omitempty" form:"role"`
+}
+type UsersResponse struct {
+	UserID   int    `json:"userId" db:"id"`
+	Username string `json:"username" db:"username"`
+	Email    string `json:"email" db:"email"`
 }
 
-func FindAllUser() ([]Users, error) {
+func FindAllUser() ([]UsersResponse, error) {
 	conn, err := utils.DBConnect()
 	if err != nil {
-		return []Users{}, err
+		return []UsersResponse{}, err
 	}
 	defer func() {
 		conn.Conn().Close(context.Background())
 	}()
-	query := `SELECT * FROM users`
+	query := `SELECT id, username, email FROM users`
 	data, err := conn.Query(context.Background(), query)
-	result, err := pgx.CollectRows[Users](data, pgx.RowToStructByName)
+	if err != nil {
+		return nil, err
+	}
+	result, err := pgx.CollectRows[UsersResponse](data, pgx.RowToStructByName)
+	if err != nil {
+		return nil, err
+	}
 	return result, nil
 }
 func Register(user Users) error {
