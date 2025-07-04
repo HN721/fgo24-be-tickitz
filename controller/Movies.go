@@ -9,6 +9,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// GetAllMovies godoc
+// @Summary Get Upcoming movies
+// @Description Retrieve all movies
+// @Tags Movies
+// @Produce json
+// @Success 200 {object} utils.Response{results=[]models.Movies}
+// @Failure 500 {object} utils.Response
+// @Router /movie/upcoming [get]
 func GetUpcomingMovies(ctx *gin.Context) {
 	data, err := models.GetUpcomingMovies()
 	if err != nil {
@@ -27,6 +35,15 @@ func GetUpcomingMovies(ctx *gin.Context) {
 	})
 
 }
+
+// GetAllMovies godoc
+// @Summary Get NowShowing movies
+// @Description Retrieve all movies
+// @Tags Movies
+// @Produce json
+// @Success 200 {object} utils.Response{results=[]models.Movies}
+// @Failure 500 {object} utils.Response
+// @Router /movie/now-showing [get]
 func GetNowShoinfMovies(ctx *gin.Context) {
 	data, err := models.NowShowingMovies()
 	if err != nil {
@@ -45,6 +62,15 @@ func GetNowShoinfMovies(ctx *gin.Context) {
 	})
 
 }
+
+// @Summary Get Upcoming movies
+// @Description Retrieve all movies
+// @Tags Movies
+// @Produce json
+// @Success 200 {object} utils.Response{results=[]models.Movies}
+// @Failure 500 {object} utils.Response
+// @Security Token
+// @Router /movie [get]
 func GetMovies(ctx *gin.Context) {
 	data, err := models.GetAllMovies()
 	if err != nil {
@@ -63,6 +89,17 @@ func GetMovies(ctx *gin.Context) {
 	})
 
 }
+
+// @Summary Create
+// @Description Admin create movies
+// @Tags Admin
+// @Produce json
+// @Accept json
+// @Param movie body models.Movies true "Movie Data"
+// @Success 200 {object} utils.Response
+// @Failure 500 {object} utils.Response
+// @Security Token
+// @Router /movie [post]
 func CreateMovies(ctx *gin.Context) {
 	var req models.Movies
 
@@ -90,6 +127,19 @@ func CreateMovies(ctx *gin.Context) {
 		Results: req,
 	})
 }
+
+// @Summary Update
+// @Description Admin Update movies
+// @Tags Admin
+// @Produce json
+// @Accept json
+// @Param id path int true "Movie ID"
+// @Param movie body models.Movies true "Movie Data"
+// @Success 200 {object} utils.Response "Successfully updated movie"
+// @Failure 400 {object} utils.Response "Bad Request"
+// @Failure 500 {object} utils.Response "Internal Server Error"
+// @Security Token
+// @Router /movie/{id} [patch]
 func UpdateMovies(ctx *gin.Context) {
 	var req models.Movies
 	id := ctx.Param("id")
@@ -120,6 +170,19 @@ func UpdateMovies(ctx *gin.Context) {
 		Results: req,
 	})
 }
+
+// @Summary Delete
+// @Description Delete Update movies
+// @Tags Admin
+// @Produce json
+// @Accept json
+// @Param id path int true "Movie ID"
+// @Param movie body models.Movies true "Movie Data"
+// @Success 200 {object} utils.Response "Successfully updated movie"
+// @Failure 400 {object} utils.Response "Bad Request"
+// @Failure 500 {object} utils.Response "Internal Server Error"
+// @Security Token
+// @Router /movie/{id} [delete]
 func DeleteMovies(ctx *gin.Context) {
 	id := ctx.Param("id")
 	movieId, _ := strconv.Atoi(id)
@@ -140,7 +203,13 @@ func DeleteMovies(ctx *gin.Context) {
 }
 
 // Movies Genres
-
+// @Summary Get Genre
+// @Description Retrieve all Genre
+// @Tags Genres
+// @Produce json
+// @Success 200 {object} utils.Response{results=[]models.Genres}
+// @Failure 500 {object} utils.Response
+// @Router /movie/genre [get]
 func GetGenre(ctx *gin.Context) {
 	data, err := models.GenreMovies()
 	if err != nil {
@@ -157,6 +226,17 @@ func GetGenre(ctx *gin.Context) {
 		Results: data,
 	})
 }
+
+// @Summary Create Genre
+// @Description Admin create Genre
+// @Tags Genres
+// @Produce json
+// @Accept json
+// @Param movie body models.Genres true "Genre Data"
+// @Success 200 {object} utils.Response
+// @Failure 500 {object} utils.Response
+// @Security Token
+// @Router /movie/genre [post]
 func CreateGenres(ctx *gin.Context) {
 	var req models.Genres
 
@@ -184,6 +264,18 @@ func CreateGenres(ctx *gin.Context) {
 		Results: req,
 	})
 }
+
+// @Summary Update Genre
+// @Description Admin Update Genre
+// @Tags Genres
+// @Produce json
+// @Accept json
+// @Param movie body models.Genres true "Genre Data"
+// @Param id path int true "Genre ID"
+// @Success 200 {object} utils.Response
+// @Failure 500 {object} utils.Response
+// @Security Token
+// @Router /movie/genre/{id} [Patch]
 func UpdateGenre(ctx *gin.Context) {
 	var req models.Genres
 	id := ctx.Param("id")
@@ -212,6 +304,18 @@ func UpdateGenre(ctx *gin.Context) {
 		Results: req,
 	})
 }
+
+// @Summary Delete Genre
+// @Description Admin Delete Genre
+// @Tags Genres
+// @Produce json
+// @Accept json
+// @Param movie body models.Genres true "Genre Data"
+// @Param id path int true "Genre ID"
+// @Success 200 {object} utils.Response
+// @Failure 500 {object} utils.Response
+// @Security Token
+// @Router /movie/genre/{id} [Delete]
 func DeleteGenre(ctx *gin.Context) {
 	id := ctx.Param("id")
 	genreId, _ := strconv.Atoi(id)
@@ -231,6 +335,13 @@ func DeleteGenre(ctx *gin.Context) {
 }
 
 // Movies Actors
+// @Summary Get Actorss
+// @Description Retrieve all actors
+// @Tags Actors
+// @Produce json
+// @Success 200 {object} utils.Response{results=[]models.Actor}
+// @Failure 400 {object} utils.Response
+// @Router /movie/actor [get]
 func GetActors(ctx *gin.Context) {
 	data, err := models.ActorMovies()
 	if err != nil {
@@ -247,6 +358,17 @@ func GetActors(ctx *gin.Context) {
 		Results: data,
 	})
 }
+
+// @Summary Create Actors
+// @Description Admin create Actors
+// @Tags Actors
+// @Produce json
+// @Accept json
+// @Param movie body models.Actor true "Actor Data"
+// @Success 200 {object} utils.Response
+// @Failure 500 {object} utils.Response
+// @Security Token
+// @Router /movie/actor [post]
 func CreateActor(ctx *gin.Context) {
 	var req models.Actor
 
@@ -274,6 +396,18 @@ func CreateActor(ctx *gin.Context) {
 		Results: req,
 	})
 }
+
+// @Summary Update Actor
+// @Description Admin update Actors
+// @Tags Actors
+// @Produce json
+// @Accept json
+// @Param movie body models.Actor true "Actor Data"
+// @Param id path int true "Actor ID"
+// @Success 200 {object} utils.Response
+// @Failure 500 {object} utils.Response
+// @Security Token
+// @Router /movie/actor/{id} [patch]
 func UpdateActor(ctx *gin.Context) {
 	var req models.Actor
 	id := ctx.Param("id")
@@ -302,6 +436,17 @@ func UpdateActor(ctx *gin.Context) {
 		Results: req,
 	})
 }
+
+// @Summary Delete Actor
+// @Description Admin Delete Actors
+// @Tags Actors
+// @Produce json
+// @Accept json
+// @Param id path int true "Actor ID"
+// @Success 200 {object} utils.Response
+// @Failure 500 {object} utils.Response
+// @Security Token
+// @Router /movie/actor/{id} [delete]
 func DeleteActor(ctx *gin.Context) {
 	id := ctx.Param("id")
 	actorId, _ := strconv.Atoi(id)

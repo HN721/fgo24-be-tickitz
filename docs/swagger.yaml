@@ -1,0 +1,474 @@
+definitions:
+  models.Actor:
+    properties:
+      fullname:
+        type: string
+      id:
+        type: integer
+    type: object
+  models.Genres:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  models.Movies:
+    properties:
+      background:
+        type: string
+      casts:
+        items:
+          type: string
+        type: array
+      directors:
+        items:
+          type: string
+        type: array
+      duration:
+        type: integer
+      genres:
+        items:
+          type: string
+        type: array
+      id:
+        type: integer
+      poster:
+        type: string
+      price:
+        type: integer
+      releaseDate:
+        type: string
+      synopsis:
+        type: string
+      title:
+        type: string
+    required:
+    - casts
+    - directors
+    - genres
+    type: object
+  utils.Response:
+    properties:
+      error:
+        type: string
+      message:
+        type: string
+      results: {}
+      success:
+        type: boolean
+      token:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: This is a backend service for tickitz web app
+  title: fgo24-be-tickitz
+  version: "1.0"
+paths:
+  /movie:
+    get:
+      description: Retrieve all movies
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                results:
+                  items:
+                    $ref: '#/definitions/models.Movies'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - Token: []
+      summary: Get Upcoming movies
+      tags:
+      - Movies
+    post:
+      consumes:
+      - application/json
+      description: Admin create movies
+      parameters:
+      - description: Movie Data
+        in: body
+        name: movie
+        required: true
+        schema:
+          $ref: '#/definitions/models.Movies'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - Token: []
+      summary: Create
+      tags:
+      - Admin
+  /movie/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete Update movies
+      parameters:
+      - description: Movie ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Movie Data
+        in: body
+        name: movie
+        required: true
+        schema:
+          $ref: '#/definitions/models.Movies'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully updated movie
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - Token: []
+      summary: Delete
+      tags:
+      - Admin
+    patch:
+      consumes:
+      - application/json
+      description: Admin Update movies
+      parameters:
+      - description: Movie ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Movie Data
+        in: body
+        name: movie
+        required: true
+        schema:
+          $ref: '#/definitions/models.Movies'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully updated movie
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - Token: []
+      summary: Update
+      tags:
+      - Admin
+  /movie/actor:
+    get:
+      description: Retrieve all actors
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                results:
+                  items:
+                    $ref: '#/definitions/models.Actor'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get Actorss
+      tags:
+      - Actors
+    post:
+      consumes:
+      - application/json
+      description: Admin create Actors
+      parameters:
+      - description: Actor Data
+        in: body
+        name: movie
+        required: true
+        schema:
+          $ref: '#/definitions/models.Actor'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - Token: []
+      summary: Create Actors
+      tags:
+      - Actors
+  /movie/actor/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Admin Delete Actors
+      parameters:
+      - description: Actor ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - Token: []
+      summary: Delete Actor
+      tags:
+      - Actors
+    patch:
+      consumes:
+      - application/json
+      description: Admin update Actors
+      parameters:
+      - description: Actor Data
+        in: body
+        name: movie
+        required: true
+        schema:
+          $ref: '#/definitions/models.Actor'
+      - description: Actor ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - Token: []
+      summary: Update Actor
+      tags:
+      - Actors
+  /movie/genre:
+    get:
+      description: Retrieve all Genre
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                results:
+                  items:
+                    $ref: '#/definitions/models.Genres'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get Genre
+      tags:
+      - Genres
+    post:
+      consumes:
+      - application/json
+      description: Admin create Genre
+      parameters:
+      - description: Genre Data
+        in: body
+        name: movie
+        required: true
+        schema:
+          $ref: '#/definitions/models.Genres'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - Token: []
+      summary: Create Genre
+      tags:
+      - Genres
+  /movie/genre/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Admin Delete Genre
+      parameters:
+      - description: Genre Data
+        in: body
+        name: movie
+        required: true
+        schema:
+          $ref: '#/definitions/models.Genres'
+      - description: Genre ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - Token: []
+      summary: Delete Genre
+      tags:
+      - Genres
+    patch:
+      consumes:
+      - application/json
+      description: Admin Update Genre
+      parameters:
+      - description: Genre Data
+        in: body
+        name: movie
+        required: true
+        schema:
+          $ref: '#/definitions/models.Genres'
+      - description: Genre ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - Token: []
+      summary: Update Genre
+      tags:
+      - Genres
+  /movie/now-showing:
+    get:
+      description: Retrieve all movies
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                results:
+                  items:
+                    $ref: '#/definitions/models.Movies'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get NowShowing movies
+      tags:
+      - Movies
+  /movie/upcoming:
+    get:
+      description: Retrieve all movies
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                results:
+                  items:
+                    $ref: '#/definitions/models.Movies'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get Upcoming movies
+      tags:
+      - Movies
+securityDefinitions:
+  Token:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

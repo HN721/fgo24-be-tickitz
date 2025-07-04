@@ -9,6 +9,13 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// @title           fgo24-be-tickitz
+// @version         1.0
+// @description     This is a backend service for tickitz web app
+// @SecurityDefinitions.ApiKey  Token
+// @in header
+// @name Authorization
+// @Basepath /
 func main() {
 	godotenv.Load()
 

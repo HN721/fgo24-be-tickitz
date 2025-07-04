@@ -39,21 +39,43 @@ func Register(user Users) error {
 	if err != nil {
 		return err
 	}
-	query := `
-	INSERT INTO users (username, email, password)
-	VALUES ($1, $2, $3)
-`
-	hash, err := services.HashPassword(user.Password)
-	_, err = conn.Exec(context.Background(), query,
-		user.Username,
-		user.Email,
-		hash,
-	)
 	defer func() {
 		conn.Conn().Close(context.Background())
 	}()
+
+	tx, err := conn.Begin(context.Background())
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(context.Background())
+
+	hash, err := services.HashPassword(user.Password)
+	if err != nil {
+		return err
+	}
+
+	var userId int
+	err = tx.QueryRow(context.Background(), `
+		INSERT INTO users (username, email, password)
+		VALUES ($1, $2, $3)
+		RETURNING id
+	`, user.Username, user.Email, hash).Scan(&userId)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(context.Background(), `
+		INSERT INTO profile (id_user)
+		VALUES ($1)
+	`, userId)
+	if err != nil {
+		return err
+	}
+
+	err = tx.Commit(context.Background())
 	return err
 }
+
 func Login(user Users) (Users, error) {
 	conn, err := utils.DBConnect()
 	if err != nil {

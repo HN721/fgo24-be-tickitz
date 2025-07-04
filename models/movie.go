@@ -28,11 +28,11 @@ type Genres struct {
 }
 type Actor struct {
 	Id   int    `json:"id" db:"id"`
-	Name string `json:"name" db:"name"`
+	Name string `json:"fullname" db:"fullname"`
 }
 type Directors struct {
 	Id   int    `json:"id" db:"id"`
-	Name string `json:"name" db:"name"`
+	Name string `json:"fullname" db:"fullname"`
 }
 
 func GetUpcomingMovies() ([]Movies, error) {
