@@ -95,9 +95,9 @@ func Login(user Users) (Users, error) {
 	defer conn.Conn().Close(context.Background())
 
 	var dbUser Users
-	query := `SELECT username, email, password, role FROM users WHERE email = $1`
+	query := `SELECT id,username, email, password, role FROM users WHERE email = $1`
 	err = conn.QueryRow(context.Background(), query, user.Email).
-		Scan(&dbUser.Username, &dbUser.Email, &dbUser.Password, &dbUser.Role)
+		Scan(&dbUser.UserID, &dbUser.Username, &dbUser.Email, &dbUser.Password, &dbUser.Role)
 
 	if err != nil {
 		if err.Error() == "no rows in result set" {

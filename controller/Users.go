@@ -24,7 +24,7 @@ func CreateToken(username string, role string, id int) (string, error) {
 		})
 	tokenString, err := token.SignedString([]byte(os.Getenv("SECRET_KEY")))
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 	return tokenString, nil
 }
@@ -36,6 +36,7 @@ func CreateToken(username string, role string, id int) (string, error) {
 // @Produce json
 // @Success 200 {object} utils.Response{results=[]models.Users}
 // @Failure 400 {object} utils.Response
+// @Security Token
 // @Router /auth [get]
 func GetUser(ctx *gin.Context) {
 	result, err := models.FindAllUser()
@@ -101,6 +102,18 @@ func Register(ctx *gin.Context) {
 		Results: users,
 	})
 }
+
+// Login godoc
+// @Summary User Login
+// @Description Authenticate user and return JWT token
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param Login body dto.LoginRequest true "Login Data"
+// @Success 200 {object} utils.Response{results=models.Users, token=string}
+// @Failure 400 {object} utils.Response
+// @Failure 500 {object} utils.Response
+// @Router /auth/login [post]
 func Login(ctx *gin.Context) {
 	var req dto.LoginRequest
 	err := ctx.ShouldBind(&req)
@@ -128,10 +141,23 @@ func Login(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, utils.Response{
 		Success: true,
 		Message: "ok",
-		Results: users,
+		Results: result,
 		Token:   generateToken,
 	})
 }
+
+// ChangePassword godoc
+// @Summary Change user password
+// @Description Change password using OTP and old password verification
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Security Token
+// @Param ChangePassword body dto.ChangePassword true "Change Password Data"
+// @Success 201 {object} utils.Response
+// @Failure 400 {object} utils.Response
+// @Failure 500 {object} utils.Response
+// @Router /auth/reset [post]
 func ChangePassword(ctx *gin.Context) {
 	var req dto.ChangePassword
 	err := ctx.ShouldBind(&req)
@@ -156,10 +182,19 @@ func ChangePassword(ctx *gin.Context) {
 	})
 }
 
+// ForgotPassword godoc
+// @Summary Forgot password request
+// @Description Send OTP to user's email for password reset
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Security Token
+// @Param ForgotPassword body dto.ForgotPasswordRequest true "Forgot Password Data"
+// @Success 200 {object} utils.Response
+// @Failure 400 {object} utils.Response
+// @Router /auth/forgot [post]
 func ForgotPassword(ctx *gin.Context) {
-	var req struct {
-		Email string `json:"email" form:"email" binding:"required,email"`
-	}
+	var req dto.ForgotPasswordRequest
 	ctx.ShouldBind(&req)
 	err := models.ForgetPassword(req.Email)
 

@@ -17,3 +17,7 @@ type ChangePassword struct {
 	OldPassword string `json:"oldPassword"`
 	NewPassword string `json:"newpassword"`
 }
+
+type ForgotPasswordRequest struct {
+	Email string `json:"email" binding:"required,email"`
+}

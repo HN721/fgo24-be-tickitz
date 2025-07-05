@@ -2,14 +2,15 @@ package routers
 
 import (
 	"weeklytickits/controller"
+	"weeklytickits/middleware"
 
 	"github.com/gin-gonic/gin"
 )
 
 func authRouter(r *gin.RouterGroup) {
-	r.GET("", controller.GetUser)
+	r.GET("", middleware.AdminMiddleware(), controller.GetUser)
 	r.POST("/register", controller.Register)
 	r.POST("/login", controller.Login)
-	r.POST("/reset", controller.ChangePassword)
-	r.POST("/forgot", controller.ForgotPassword)
+	r.POST("/reset", middleware.AuthMiddleware(), controller.ChangePassword)
+	r.POST("/forgot", middleware.AuthMiddleware(), controller.ForgotPassword)
 }

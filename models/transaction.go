@@ -72,7 +72,7 @@ func IsSeatAvailable(ctx context.Context, tx pgx.Tx, seat string, movieId, cinem
 
 func CreateTransactionWithDetails(tr Transaction, details []TransactionDetailRequest) error {
 	conn, err := utils.DBConnect()
-	fmt.Println(tr.Location)
+	fmt.Println(tr.UserId)
 	if err != nil {
 		return err
 	}
@@ -133,7 +133,12 @@ func CreateTransactionWithDetails(tr Transaction, details []TransactionDetailReq
 			return fmt.Errorf("failed to insert transaction_detail: %v", err)
 		}
 	}
-
+	queryHistory := `INSERT INTO history_transaction(transaction_id,status,note) VALUES($1,$2,$3)`
+	_, err = tx.Exec(ctx, queryHistory,
+		transactionId,
+		"pending",
+		"OK",
+	)
 	if err := tx.Commit(ctx); err != nil {
 		return fmt.Errorf("failed to commit transaction: %v", err)
 	}

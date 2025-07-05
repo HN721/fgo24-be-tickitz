@@ -18,6 +18,31 @@ definitions:
       userId:
         type: integer
     type: object
+  dto.ChangePassword:
+    properties:
+      email:
+        type: string
+      newpassword:
+        type: string
+      oldPassword:
+        type: string
+      otp:
+        type: integer
+    type: object
+  dto.ForgotPasswordRequest:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  dto.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
   dto.RegisterResquest:
     properties:
       confirmPassword:
@@ -212,7 +237,74 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/utils.Response'
+      security:
+      - Token: []
       summary: Get User
+      tags:
+      - Auth
+  /auth/forgot:
+    post:
+      consumes:
+      - application/json
+      description: Send OTP to user's email for password reset
+      parameters:
+      - description: Forgot Password Data
+        in: body
+        name: ForgotPassword
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ForgotPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - Token: []
+      summary: Forgot password request
+      tags:
+      - Auth
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user and return JWT token
+      parameters:
+      - description: Login Data
+        in: body
+        name: Login
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                ' token':
+                  type: string
+                results:
+                  $ref: '#/definitions/models.Users'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: User Login
       tags:
       - Auth
   /auth/register:
@@ -244,6 +336,38 @@ paths:
           schema:
             $ref: '#/definitions/utils.Response'
       summary: Post User
+      tags:
+      - Auth
+  /auth/reset:
+    post:
+      consumes:
+      - application/json
+      description: Change password using OTP and old password verification
+      parameters:
+      - description: Change Password Data
+        in: body
+        name: ChangePassword
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ChangePassword'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - Token: []
+      summary: Change user password
       tags:
       - Auth
   /cinema:

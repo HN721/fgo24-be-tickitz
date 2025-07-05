@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -33,6 +34,8 @@ type CreateTransactionRequest struct {
 // @Router /trx [post]
 func CreateTransaction(ctx *gin.Context) {
 	var req CreateTransactionRequest
+	userId, _ := ctx.Get("userID")
+	fmt.Println(userId)
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, utils.Response{
 			Success: false,
@@ -47,7 +50,7 @@ func CreateTransaction(ctx *gin.Context) {
 		Date:            time.Now(),
 		PriceTotal:      req.PriceTotal,
 		Location:        req.Location,
-		UserId:          req.UserId,
+		UserId:          userId.(int),
 		MovieId:         req.MovieId,
 		CinemaId:        req.CinemaId,
 		PaymentMethodId: req.PaymentMethodId,
