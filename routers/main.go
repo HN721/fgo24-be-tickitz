@@ -3,6 +3,7 @@ package routers
 import (
 	"net/http"
 	"weeklytickits/docs"
+	"weeklytickits/middleware"
 
 	"github.com/gin-gonic/gin"
 	swaggerfiles "github.com/swaggo/files"
@@ -13,9 +14,9 @@ import (
 func CombineRouter(r *gin.Engine) {
 	authRouter(r.Group("/auth"))
 	movieRoute(r.Group("/movie"))
-	cinemaRouter(r.Group("/cinema"))
-	transactionRoutes(r.Group("/trx"))
-	paymentRouter(r.Group("/payment"))
+	cinemaRouter(r.Group("/cinema", middleware.AdminMiddleware()))
+	transactionRoutes(r.Group("/trx", middleware.AuthMiddleware()))
+	paymentRouter(r.Group("/payment", middleware.AdminMiddleware()))
 
 	docs.SwaggerInfo.BasePath = "/"
 	r.GET("/docs", func(ctx *gin.Context) {

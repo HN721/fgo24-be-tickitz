@@ -17,17 +17,17 @@ func movieRoute(r *gin.RouterGroup) {
 	r.DELETE("/:id", middleware.AuthMiddleware(), controller.DeleteMovies)
 	// genre
 	r.GET("/genre", controller.GetGenre)
-	r.POST("/genre", controller.CreateGenres)
-	r.PATCH("/genre/:id", controller.UpdateGenre)
-	r.DELETE("/genre/:id", controller.DeleteGenre)
+	r.POST("/genre", middleware.AdminMiddleware(), controller.CreateGenres)
+	r.PATCH("/genre/:id", middleware.AdminMiddleware(), controller.UpdateGenre)
+	r.DELETE("/genre/:id", middleware.AdminMiddleware(), controller.DeleteGenre)
 	// actor
 	r.GET("/actor", controller.GetActors)
-	r.POST("/actor", controller.CreateActor)
-	r.PATCH("/actor/:id", controller.UpdateActor)
-	r.DELETE("/actor/:id", controller.DeleteActor)
+	r.POST("/actor", middleware.AdminMiddleware(), controller.CreateActor)
+	r.PATCH("/actor/:id", middleware.AdminMiddleware(), controller.UpdateActor)
+	r.DELETE("/actor/:id", middleware.AdminMiddleware(), controller.DeleteActor)
 	// director
 	r.GET("/director", controller.GetDirector)
-	r.POST("/director", controller.CreateDirector)
-	r.PATCH("/director/:id", controller.UpdateDirector)
-	r.DELETE("/director/:id", controller.DeleteDirector)
+	r.POST("/director", middleware.AdminMiddleware(), controller.CreateDirector)
+	r.PATCH("/director/:id", middleware.AdminMiddleware(), controller.UpdateDirector)
+	r.DELETE("/director/:id", middleware.AdminMiddleware(), controller.DeleteDirector)
 }

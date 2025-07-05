@@ -9,6 +9,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// GetAllCinema godoc
+// @Summary Get  Cinema
+// @Description Retrieve all Cinema
+// @Tags Cinema
+// @Produce json
+// @Success 200 {object} utils.Response{results=[]models.Cinema}
+// @Failure 500 {object} utils.Response
+// @Router /cinema [get]
 func GetAllCinemas(ctx *gin.Context) {
 	data, err := models.GetAllCinemas()
 	if err != nil {
@@ -26,6 +34,17 @@ func GetAllCinemas(ctx *gin.Context) {
 		Results: data,
 	})
 }
+
+// GetCinemaByID godoc
+// @Summary Get cinema by ID
+// @Description Retrieve a specific cinema using its ID
+// @Tags Cinema
+// @Produce json
+// @Param id path int true "Cinema ID"
+// @Success 200 {object} utils.Response{results=models.Cinema}
+// @Failure 400 {object} utils.Response
+// @Failure 404 {object} utils.Response
+// @Router /cinema/{id} [get]
 func GetCinemaByID(ctx *gin.Context) {
 	idParam := ctx.Param("id")
 	id, err := strconv.Atoi(idParam)
@@ -55,6 +74,17 @@ func GetCinemaByID(ctx *gin.Context) {
 	})
 }
 
+// CreateCinema godoc
+// @Summary Create a new cinema
+// @Description Add a new cinema to the database
+// @Tags Cinema
+// @Accept json
+// @Produce json
+// @Param cinema body models.Cinema true "Cinema Data"
+// @Success 201 {object} utils.Response
+// @Failure 400 {object} utils.Response
+// @Failure 500 {object} utils.Response
+// @Router /cinema [post]
 func CreateCinema(ctx *gin.Context) {
 	var cinema models.Cinema
 	if err := ctx.ShouldBindJSON(&cinema); err != nil {
@@ -82,6 +112,18 @@ func CreateCinema(ctx *gin.Context) {
 	})
 }
 
+// UpdateCinema godoc
+// @Summary Update an existing cinema
+// @Description Update cinema details by ID
+// @Tags Cinema
+// @Accept json
+// @Produce json
+// @Param id path int true "Cinema ID"
+// @Param cinema body models.Cinema true "Updated Cinema Data"
+// @Success 200 {object} utils.Response
+// @Failure 400 {object} utils.Response
+// @Failure 500 {object} utils.Response
+// @Router /cinema/{id} [put]
 func UpdateCinema(ctx *gin.Context) {
 	idParam := ctx.Param("id")
 	id, err := strconv.Atoi(idParam)
@@ -120,6 +162,16 @@ func UpdateCinema(ctx *gin.Context) {
 	})
 }
 
+// DeleteCinema godoc
+// @Summary Delete a cinema
+// @Description Delete a cinema from database by ID
+// @Tags Cinema
+// @Produce json
+// @Param id path int true "Cinema ID"
+// @Success 200 {object} utils.Response
+// @Failure 400 {object} utils.Response
+// @Failure 500 {object} utils.Response
+// @Router /cinema/{id} [delete]
 func DeleteCinema(ctx *gin.Context) {
 	idParam := ctx.Param("id")
 	id, err := strconv.Atoi(idParam)

@@ -9,6 +9,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// GetAllPayment godoc
+// @Summary Get  Payment
+// @Description Retrieve all Payment
+// @Tags Payment
+// @Produce json
+// @Success 200 {object} utils.Response{results=[]models.Payment}
+// @Failure 500 {object} utils.Response
+// @Router /payment [get]
 func GetPayments(ctx *gin.Context) {
 	data, err := models.GetAllPayments()
 	if err != nil {
@@ -27,6 +35,16 @@ func GetPayments(ctx *gin.Context) {
 	})
 }
 
+// GetPaymentByID godoc
+// @Summary Get payment method by ID
+// @Description Retrieve a specific payment method using its ID
+// @Tags Payment
+// @Produce json
+// @Param id path int true "Payment ID"
+// @Success 200 {object} utils.Response{results=models.Payment}
+// @Failure 400 {object} utils.Response
+// @Failure 404 {object} utils.Response
+// @Router /payment/{id} [get]
 func GetPaymentByID(ctx *gin.Context) {
 	idParam := ctx.Param("id")
 	id, err := strconv.Atoi(idParam)
@@ -56,6 +74,17 @@ func GetPaymentByID(ctx *gin.Context) {
 	})
 }
 
+// CreatePayment godoc
+// @Summary Create a new payment method
+// @Description Add a new payment method to the database
+// @Tags Payment
+// @Accept json
+// @Produce json
+// @Param payment body models.Payment true "Payment Data"
+// @Success 201 {object} utils.Response
+// @Failure 400 {object} utils.Response
+// @Failure 500 {object} utils.Response
+// @Router /payment [post]
 func CreatePayment(ctx *gin.Context) {
 	var payment models.Payment
 	if err := ctx.ShouldBindJSON(&payment); err != nil {
@@ -83,6 +112,18 @@ func CreatePayment(ctx *gin.Context) {
 	})
 }
 
+// UpdatePayment godoc
+// @Summary Update an existing payment method
+// @Description Update payment method details by ID
+// @Tags Payment
+// @Accept json
+// @Produce json
+// @Param id path int true "Payment ID"
+// @Param payment body models.Payment true "Updated Payment Data"
+// @Success 200 {object} utils.Response
+// @Failure 400 {object} utils.Response
+// @Failure 500 {object} utils.Response
+// @Router /payment/{id} [put]
 func UpdatePayment(ctx *gin.Context) {
 	idParam := ctx.Param("id")
 	id, err := strconv.Atoi(idParam)
@@ -121,6 +162,16 @@ func UpdatePayment(ctx *gin.Context) {
 	})
 }
 
+// DeletePayment godoc
+// @Summary Delete a payment method
+// @Description Delete a payment method from database by ID
+// @Tags Payment
+// @Produce json
+// @Param id path int true "Payment ID"
+// @Success 200 {object} utils.Response
+// @Failure 400 {object} utils.Response
+// @Failure 500 {object} utils.Response
+// @Router /payment/{id} [delete]
 func DeletePayment(ctx *gin.Context) {
 	idParam := ctx.Param("id")
 	id, err := strconv.Atoi(idParam)

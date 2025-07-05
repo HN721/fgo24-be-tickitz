@@ -1,7 +1,26 @@
 definitions:
+  controller.CreateTransactionRequest:
+    properties:
+      cinemaId:
+        type: integer
+      details:
+        items:
+          $ref: '#/definitions/models.TransactionDetailRequest'
+        type: array
+      location:
+        type: string
+      movieId:
+        type: integer
+      paymentMethodId:
+        type: integer
+      priceTotal:
+        type: integer
+      userId:
+        type: integer
+    type: object
   dto.RegisterResquest:
     properties:
-      confirm-password:
+      confirmPassword:
         type: string
       email:
         type: string
@@ -10,12 +29,67 @@ definitions:
       username:
         type: string
     type: object
+  dto.TransactionDetailData:
+    properties:
+      cinemaName:
+        type: string
+      customerName:
+        type: string
+      customerPhone:
+        type: string
+      date:
+        type: string
+      id:
+        type: integer
+      location:
+        type: string
+      movieTitle:
+        type: string
+      paymentMethodName:
+        type: string
+      seat:
+        type: string
+      time:
+        type: string
+      transactionId:
+        type: integer
+    type: object
+  dto.TransactionResponses:
+    properties:
+      cinemaName:
+        type: string
+      date:
+        type: string
+      id:
+        type: integer
+      location:
+        type: string
+      movieTitle:
+        type: string
+      paymentMethodName:
+        type: string
+      priceTotal:
+        type: integer
+      time:
+        type: string
+      userId:
+        type: integer
+    type: object
   models.Actor:
     properties:
       fullname:
         type: string
       id:
         type: integer
+    type: object
+  models.Cinema:
+    properties:
+      id:
+        type: integer
+      logo:
+        type: string
+      name:
+        type: string
     type: object
   models.Directors:
     properties:
@@ -65,6 +139,22 @@ definitions:
     - casts
     - directors
     - genres
+    type: object
+  models.Payment:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  models.TransactionDetailRequest:
+    properties:
+      customerName:
+        type: string
+      customerPhone:
+        type: string
+      seat:
+        type: string
     type: object
   models.Users:
     properties:
@@ -156,6 +246,151 @@ paths:
       summary: Post User
       tags:
       - Auth
+  /cinema:
+    get:
+      description: Retrieve all Cinema
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                results:
+                  items:
+                    $ref: '#/definitions/models.Cinema'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get  Cinema
+      tags:
+      - Cinema
+    post:
+      consumes:
+      - application/json
+      description: Add a new cinema to the database
+      parameters:
+      - description: Cinema Data
+        in: body
+        name: cinema
+        required: true
+        schema:
+          $ref: '#/definitions/models.Cinema'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Create a new cinema
+      tags:
+      - Cinema
+  /cinema/{id}:
+    delete:
+      description: Delete a cinema from database by ID
+      parameters:
+      - description: Cinema ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Delete a cinema
+      tags:
+      - Cinema
+    get:
+      description: Retrieve a specific cinema using its ID
+      parameters:
+      - description: Cinema ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                results:
+                  $ref: '#/definitions/models.Cinema'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get cinema by ID
+      tags:
+      - Cinema
+    put:
+      consumes:
+      - application/json
+      description: Update cinema details by ID
+      parameters:
+      - description: Cinema ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated Cinema Data
+        in: body
+        name: cinema
+        required: true
+        schema:
+          $ref: '#/definitions/models.Cinema'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Update an existing cinema
+      tags:
+      - Cinema
   /movie:
     get:
       description: Retrieve all movies
@@ -666,6 +901,304 @@ paths:
       summary: Get Upcoming movies
       tags:
       - Movies
+  /payment:
+    get:
+      description: Retrieve all Payment
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                results:
+                  items:
+                    $ref: '#/definitions/models.Payment'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get  Payment
+      tags:
+      - Payment
+    post:
+      consumes:
+      - application/json
+      description: Add a new payment method to the database
+      parameters:
+      - description: Payment Data
+        in: body
+        name: payment
+        required: true
+        schema:
+          $ref: '#/definitions/models.Payment'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Create a new payment method
+      tags:
+      - Payment
+  /payment/{id}:
+    delete:
+      description: Delete a payment method from database by ID
+      parameters:
+      - description: Payment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Delete a payment method
+      tags:
+      - Payment
+    get:
+      description: Retrieve a specific payment method using its ID
+      parameters:
+      - description: Payment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                results:
+                  $ref: '#/definitions/models.Payment'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get payment method by ID
+      tags:
+      - Payment
+    put:
+      consumes:
+      - application/json
+      description: Update payment method details by ID
+      parameters:
+      - description: Payment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated Payment Data
+        in: body
+        name: payment
+        required: true
+        schema:
+          $ref: '#/definitions/models.Payment'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Update an existing payment method
+      tags:
+      - Payment
+  /trx:
+    get:
+      description: Retrieve all transactions from database
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                results:
+                  items:
+                    $ref: '#/definitions/dto.TransactionResponses'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get all transactions
+      tags:
+      - Transaction
+    post:
+      consumes:
+      - application/json
+      description: Create a transaction along with its details
+      parameters:
+      - description: Transaction Data
+        in: body
+        name: transaction
+        required: true
+        schema:
+          $ref: '#/definitions/controller.CreateTransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Create a new transaction
+      tags:
+      - Transaction
+  /trx/{id}:
+    get:
+      description: Retrieve a specific transaction using its ID
+      parameters:
+      - description: Transaction ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                results:
+                  $ref: '#/definitions/dto.TransactionResponses'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get transaction by ID
+      tags:
+      - Transaction
+  /trx/detail/{id}:
+    get:
+      description: Retrieve detailed information of a transaction by transaction ID
+      parameters:
+      - description: Transaction ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                results:
+                  items:
+                    $ref: '#/definitions/dto.TransactionDetailData'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get transaction details
+      tags:
+      - Transaction
+  /trx/user/{id}:
+    get:
+      description: Retrieve all transactions for a specific user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                results:
+                  items:
+                    $ref: '#/definitions/dto.TransactionResponses'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get all transactions by user ID
+      tags:
+      - Transaction
 securityDefinitions:
   Token:
     in: header
