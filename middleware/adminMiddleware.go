@@ -43,7 +43,6 @@ func AdminMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// Ambil role user
 		role, ok := claims["role"].(string)
 		if !ok || role != "admin" {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
@@ -52,7 +51,6 @@ func AdminMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// Set userID ke context jika perlu
 		if idFloat, ok := claims["id"].(float64); ok {
 			c.Set("userID", int(idFloat))
 		}

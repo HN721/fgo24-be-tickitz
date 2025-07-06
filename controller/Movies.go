@@ -36,6 +36,41 @@ func GetUpcomingMovies(ctx *gin.Context) {
 
 }
 
+// @Summary Get Movies By Genre
+// @Description Retrieve movies filtered by genre
+// @Tags Movies
+// @Produce json
+// @Param genre query string true "Genre Name"
+// @Success 200 {object} utils.Response{results=[]models.Movies}
+// @Failure 500 {object} utils.Response
+// @Router /movie/filter [get]
+func GetFilterMovie(ctx *gin.Context) {
+	genre := ctx.Query("genre")
+	if genre == "" {
+		ctx.JSON(http.StatusBadRequest, utils.Response{
+			Success: false,
+			Message: "Genre query parameter is required",
+		})
+		return
+	}
+
+	movies, err := models.FilterMoviesByGenre(genre)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.Response{
+			Success: false,
+			Message: "Error retrieving movies by genre",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, utils.Response{
+		Success: true,
+		Message: "Successfully retrieved movies by genre",
+		Results: movies,
+	})
+}
+
 // GetAllMovies godoc
 // @Summary Get NowShowing movies
 // @Description Retrieve all movies

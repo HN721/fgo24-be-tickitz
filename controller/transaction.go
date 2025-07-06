@@ -31,6 +31,7 @@ type CreateTransactionRequest struct {
 // @Success 201 {object} utils.Response
 // @Failure 400 {object} utils.Response
 // @Failure 500 {object} utils.Response
+// @Security Token
 // @Router /trx [post]
 func CreateTransaction(ctx *gin.Context) {
 	var req CreateTransactionRequest
@@ -79,6 +80,7 @@ func CreateTransaction(ctx *gin.Context) {
 // @Produce json
 // @Success 200 {object} utils.Response{results=[]dto.TransactionResponses}
 // @Failure 500 {object} utils.Response
+// @Security Token
 // @Router /trx [get]
 func GetAllTransactions(ctx *gin.Context) {
 	data, err := models.GetAllTransactions()
@@ -104,6 +106,7 @@ func GetAllTransactions(ctx *gin.Context) {
 // @Tags Transaction
 // @Produce json
 // @Param id path int true "Transaction ID"
+// @Security Token
 // @Success 200 {object} utils.Response{results=dto.TransactionResponses}
 // @Failure 400 {object} utils.Response
 // @Failure 404 {object} utils.Response
@@ -143,6 +146,7 @@ func GetTransactionByID(ctx *gin.Context) {
 // @Tags Transaction
 // @Produce json
 // @Param id path int true "User ID"
+// @Security Token
 // @Success 200 {object} utils.Response{results=[]dto.TransactionResponses}
 // @Failure 400 {object} utils.Response
 // @Failure 500 {object} utils.Response
@@ -185,6 +189,7 @@ func GetTransactionsByUserID(ctx *gin.Context) {
 // @Success 200 {object} utils.Response{results=[]dto.TransactionDetailData}
 // @Failure 400 {object} utils.Response
 // @Failure 500 {object} utils.Response
+// @Security Token
 // @Router /trx/detail/{id} [get]
 func GetTransactionDetail(ctx *gin.Context) {
 	transactionIDStr := ctx.Param("id")

@@ -306,6 +306,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "Token": []
+                    }
+                ],
                 "description": "Add a new cinema to the database",
                 "consumes": [
                     "application/json"
@@ -403,6 +408,11 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "Token": []
+                    }
+                ],
                 "description": "Update cinema details by ID",
                 "consumes": [
                     "application/json"
@@ -454,6 +464,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "Token": []
+                    }
+                ],
                 "description": "Delete a cinema from database by ID",
                 "produces": [
                     "application/json"
@@ -513,6 +528,52 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/history/user": {
+            "get": {
+                "security": [
+                    {
+                        "Token": []
+                    }
+                ],
+                "description": "Retrieve transaction history by authenticated user ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "History"
+                ],
+                "summary": "Get History by User ID",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "results": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/dto.HistoryReq"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
@@ -1041,6 +1102,56 @@ const docTemplate = `{
                 }
             }
         },
+        "/movie/filter": {
+            "get": {
+                "description": "Retrieve movies filtered by genre",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Movies"
+                ],
+                "summary": "Get Movies By Genre",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Genre Name",
+                        "name": "genre",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "results": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.Movies"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/movie/genre": {
             "get": {
                 "description": "Retrieve all Genre",
@@ -1464,6 +1575,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "Token": []
+                    }
+                ],
                 "description": "Add a new payment method to the database",
                 "consumes": [
                     "application/json"
@@ -1561,6 +1677,11 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "Token": []
+                    }
+                ],
                 "description": "Update payment method details by ID",
                 "consumes": [
                     "application/json"
@@ -1612,6 +1733,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "Token": []
+                    }
+                ],
                 "description": "Delete a payment method from database by ID",
                 "produces": [
                     "application/json"
@@ -1653,6 +1779,11 @@ const docTemplate = `{
         },
         "/trx": {
             "get": {
+                "security": [
+                    {
+                        "Token": []
+                    }
+                ],
                 "description": "Retrieve all transactions from database",
                 "produces": [
                     "application/json"
@@ -1692,6 +1823,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "Token": []
+                    }
+                ],
                 "description": "Create a transaction along with its details",
                 "consumes": [
                     "application/json"
@@ -1738,6 +1874,11 @@ const docTemplate = `{
         },
         "/trx/detail/{id}": {
             "get": {
+                "security": [
+                    {
+                        "Token": []
+                    }
+                ],
                 "description": "Retrieve detailed information of a transaction by transaction ID",
                 "produces": [
                     "application/json"
@@ -1794,6 +1935,11 @@ const docTemplate = `{
         },
         "/trx/user/{id}": {
             "get": {
+                "security": [
+                    {
+                        "Token": []
+                    }
+                ],
                 "description": "Retrieve all transactions for a specific user",
                 "produces": [
                     "application/json"
@@ -1850,6 +1996,11 @@ const docTemplate = `{
         },
         "/trx/{id}": {
             "get": {
+                "security": [
+                    {
+                        "Token": []
+                    }
+                ],
                 "description": "Retrieve a specific transaction using its ID",
                 "produces": [
                     "application/json"
@@ -1963,6 +2114,9 @@ const docTemplate = `{
         "dto.HistoryReq": {
             "type": "object",
             "properties": {
+                "id": {
+                    "type": "integer"
+                },
                 "id_trx": {
                     "type": "integer"
                 },
@@ -2298,7 +2452,7 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "",
 	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "fgo24-be-tickitz",
+	Title:            "Movxtar API Documentation",
 	Description:      "This is a backend service for tickitz web app",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,

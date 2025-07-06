@@ -9,7 +9,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// @title           fgo24-be-tickitz
+// @title           Movxtar API Documentation
 // @version         1.0
 // @description     This is a backend service for tickitz web app
 // @SecurityDefinitions.ApiKey  Token

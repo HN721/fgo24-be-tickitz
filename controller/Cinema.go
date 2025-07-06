@@ -80,6 +80,7 @@ func GetCinemaByID(ctx *gin.Context) {
 // @Tags Cinema
 // @Accept json
 // @Produce json
+// @Security Token
 // @Param cinema body models.Cinema true "Cinema Data"
 // @Success 201 {object} utils.Response
 // @Failure 400 {object} utils.Response
@@ -118,6 +119,7 @@ func CreateCinema(ctx *gin.Context) {
 // @Tags Cinema
 // @Accept json
 // @Produce json
+// @Security Token
 // @Param id path int true "Cinema ID"
 // @Param cinema body models.Cinema true "Updated Cinema Data"
 // @Success 200 {object} utils.Response
@@ -171,6 +173,7 @@ func UpdateCinema(ctx *gin.Context) {
 // @Success 200 {object} utils.Response
 // @Failure 400 {object} utils.Response
 // @Failure 500 {object} utils.Response
+// @Security Token
 // @Router /cinema/{id} [delete]
 func DeleteCinema(ctx *gin.Context) {
 	idParam := ctx.Param("id")

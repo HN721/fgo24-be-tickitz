@@ -38,6 +38,8 @@ definitions:
     type: object
   dto.HistoryReq:
     properties:
+      id:
+        type: integer
       id_trx:
         type: integer
       note:
@@ -249,7 +251,7 @@ definitions:
 info:
   contact: {}
   description: This is a backend service for tickitz web app
-  title: fgo24-be-tickitz
+  title: Movxtar API Documentation
   version: "1.0"
 paths:
   /auth:
@@ -454,6 +456,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/utils.Response'
+      security:
+      - Token: []
       summary: Create a new cinema
       tags:
       - Cinema
@@ -481,6 +485,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/utils.Response'
+      security:
+      - Token: []
       summary: Delete a cinema
       tags:
       - Cinema
@@ -546,6 +552,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/utils.Response'
+      security:
+      - Token: []
       summary: Update an existing cinema
       tags:
       - Cinema
@@ -599,6 +607,32 @@ paths:
       security:
       - Token: []
       summary: Update a history transaction status
+      tags:
+      - History
+  /history/user:
+    get:
+      description: Retrieve transaction history by authenticated user ID
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                results:
+                  items:
+                    $ref: '#/definitions/dto.HistoryReq'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - Token: []
+      summary: Get History by User ID
       tags:
       - History
   /movie:
@@ -962,6 +996,36 @@ paths:
       summary: Update Directors
       tags:
       - Directors
+  /movie/filter:
+    get:
+      description: Retrieve movies filtered by genre
+      parameters:
+      - description: Genre Name
+        in: query
+        name: genre
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                results:
+                  items:
+                    $ref: '#/definitions/models.Movies'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get Movies By Genre
+      tags:
+      - Movies
   /movie/genre:
     get:
       description: Retrieve all Genre
@@ -1176,6 +1240,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/utils.Response'
+      security:
+      - Token: []
       summary: Create a new payment method
       tags:
       - Payment
@@ -1203,6 +1269,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/utils.Response'
+      security:
+      - Token: []
       summary: Delete a payment method
       tags:
       - Payment
@@ -1268,6 +1336,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/utils.Response'
+      security:
+      - Token: []
       summary: Update an existing payment method
       tags:
       - Payment
@@ -1292,6 +1362,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/utils.Response'
+      security:
+      - Token: []
       summary: Get all transactions
       tags:
       - Transaction
@@ -1321,6 +1393,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/utils.Response'
+      security:
+      - Token: []
       summary: Create a new transaction
       tags:
       - Transaction
@@ -1353,6 +1427,8 @@ paths:
           description: Not Found
           schema:
             $ref: '#/definitions/utils.Response'
+      security:
+      - Token: []
       summary: Get transaction by ID
       tags:
       - Transaction
@@ -1387,6 +1463,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/utils.Response'
+      security:
+      - Token: []
       summary: Get transaction details
       tags:
       - Transaction
@@ -1421,6 +1499,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/utils.Response'
+      security:
+      - Token: []
       summary: Get all transactions by user ID
       tags:
       - Transaction

@@ -74,3 +74,30 @@ func UpdateHistory(ctx *gin.Context) {
 		Message: "Sucess Update",
 	})
 }
+
+// GetHistoryId godoc
+// @Summary Get History by User ID
+// @Description Retrieve transaction history by authenticated user ID
+// @Tags History
+// @Produce json
+// @Success 200 {object} utils.Response{results=[]dto.HistoryReq}
+// @Failure 400 {object} utils.Response
+// @Security Token
+// @Router /history/user  [get]
+func GetHistoryUserId(ctx *gin.Context) {
+	userId, _ := ctx.Get("userID")
+	data, err := models.GetHistoryByIdUser(userId.(int))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.Response{
+			Success: false,
+			Message: "Error",
+			Error:   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, utils.Response{
+		Success: true,
+		Message: "Sucess Update",
+		Results: data,
+	})
+}

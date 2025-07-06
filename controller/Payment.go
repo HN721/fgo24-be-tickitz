@@ -84,6 +84,7 @@ func GetPaymentByID(ctx *gin.Context) {
 // @Success 201 {object} utils.Response
 // @Failure 400 {object} utils.Response
 // @Failure 500 {object} utils.Response
+// @Security Token
 // @Router /payment [post]
 func CreatePayment(ctx *gin.Context) {
 	var payment models.Payment
@@ -123,6 +124,7 @@ func CreatePayment(ctx *gin.Context) {
 // @Success 200 {object} utils.Response
 // @Failure 400 {object} utils.Response
 // @Failure 500 {object} utils.Response
+// @Security Token
 // @Router /payment/{id} [put]
 func UpdatePayment(ctx *gin.Context) {
 	idParam := ctx.Param("id")
@@ -171,6 +173,7 @@ func UpdatePayment(ctx *gin.Context) {
 // @Success 200 {object} utils.Response
 // @Failure 400 {object} utils.Response
 // @Failure 500 {object} utils.Response
+// @Security Token
 // @Router /payment/{id} [delete]
 func DeletePayment(ctx *gin.Context) {
 	idParam := ctx.Param("id")

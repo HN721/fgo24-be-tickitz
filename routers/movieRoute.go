@@ -10,11 +10,12 @@ import (
 func movieRoute(r *gin.RouterGroup) {
 	r.GET("/upcoming", controller.GetUpcomingMovies)
 	r.GET("/now-showing", controller.GetNowShoinfMovies)
+	r.GET("/filter", controller.GetFilterMovie)
 
 	r.GET("", controller.GetMovies)
-	r.POST("", middleware.AuthMiddleware(), controller.CreateMovies)
-	r.PATCH("/:id", controller.UpdateMovies)
-	r.DELETE("/:id", middleware.AuthMiddleware(), controller.DeleteMovies)
+	r.POST("", middleware.AdminMiddleware(), controller.CreateMovies)
+	r.PATCH("/:id", middleware.AdminMiddleware(), controller.UpdateMovies)
+	r.DELETE("/:id", middleware.AdminMiddleware(), controller.DeleteMovies)
 	// genre
 	r.GET("/genre", controller.GetGenre)
 	r.POST("/genre", middleware.AdminMiddleware(), controller.CreateGenres)
