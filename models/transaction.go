@@ -136,8 +136,8 @@ func CreateTransactionWithDetails(tr Transaction, details []TransactionDetailReq
 	queryHistory := `INSERT INTO history_transaction(transaction_id,status,note) VALUES($1,$2,$3)`
 	_, err = tx.Exec(ctx, queryHistory,
 		transactionId,
-		"pending",
-		"OK",
+		"Processing",
+		"Pending",
 	)
 	if err := tx.Commit(ctx); err != nil {
 		return fmt.Errorf("failed to commit transaction: %v", err)

@@ -17,6 +17,7 @@ func CombineRouter(r *gin.Engine) {
 	cinemaRouter(r.Group("/cinema", middleware.AdminMiddleware()))
 	transactionRoutes(r.Group("/trx", middleware.AuthMiddleware()))
 	paymentRouter(r.Group("/payment", middleware.AdminMiddleware()))
+	historyRoute(r.Group("/history"))
 
 	docs.SwaggerInfo.BasePath = "/"
 	r.GET("/docs", func(ctx *gin.Context) {
