@@ -126,8 +126,6 @@ direction LR
      history_transaction{   string id PK
         string id_transaction FK
         string status
-        string updated_by
-        timestamp updated_at
         string note
     }
     cinema{
