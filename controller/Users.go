@@ -167,7 +167,7 @@ func ChangePassword(ctx *gin.Context) {
 		})
 		return
 	}
-	err = models.ChangePassword(req.Email, req.OTP, req.NewPassword, req.OldPassword)
+	err = models.ChangePassword(req.Email, req.OTP, req.NewPassword)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.Response{
 			Success: false,

@@ -97,7 +97,7 @@ func GetHistoryUserId(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, utils.Response{
 		Success: true,
-		Message: "Sucess Update",
+		Message: "Ok",
 		Results: data,
 	})
 }

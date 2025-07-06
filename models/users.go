@@ -113,7 +113,7 @@ func Login(user Users) (Users, error) {
 	return dbUser, nil
 }
 
-func ChangePassword(email string, OTP int, newPassword string, oldPassword string) error {
+func ChangePassword(email string, OTP int, newPassword string) error {
 	conn, err := utils.DBConnect()
 	if err != nil {
 		return err
@@ -133,14 +133,6 @@ func ChangePassword(email string, OTP int, newPassword string, oldPassword strin
 	oldOtp, _ := strconv.Atoi(storedOTP)
 	if oldOtp != OTP {
 		return fmt.Errorf("Invalid OTP")
-	}
-	err = services.ComparePassword(hashedPassword, oldPassword)
-	if err != nil {
-		return fmt.Errorf("password lama salah")
-	}
-
-	if oldPassword == newPassword {
-		return fmt.Errorf("password baru tidak boleh sama dengan password lama")
 	}
 
 	newHashed, err := services.HashPassword(newPassword)

@@ -13,7 +13,6 @@ import (
 
 type CreateTransactionRequest struct {
 	PriceTotal      int                               `json:"priceTotal"`
-	UserId          int                               `json:"userId"`
 	Location        string                            `json:"location"`
 	MovieId         int                               `json:"movieId"`
 	CinemaId        int                               `json:"cinemaId"`
@@ -47,17 +46,17 @@ func CreateTransaction(ctx *gin.Context) {
 	}
 
 	transaction := models.Transaction{
-		Time:            time.Now(),
-		Date:            time.Now(),
-		PriceTotal:      req.PriceTotal,
-		Location:        req.Location,
-		UserId:          userId.(int),
+		Time:       time.Now(),
+		Date:       time.Now(),
+		PriceTotal: req.PriceTotal,
+		Location:   req.Location,
+
 		MovieId:         req.MovieId,
 		CinemaId:        req.CinemaId,
 		PaymentMethodId: req.PaymentMethodId,
 	}
-
-	err := models.CreateTransactionWithDetails(transaction, req.Details)
+	id := userId.(int)
+	err := models.CreateTransactionWithDetails(transaction, req.Details, id)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.Response{
 			Success: false,

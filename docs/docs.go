@@ -407,7 +407,51 @@ const docTemplate = `{
                     }
                 }
             },
-            "put": {
+            "delete": {
+                "security": [
+                    {
+                        "Token": []
+                    }
+                ],
+                "description": "Delete a cinema from database by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cinema"
+                ],
+                "summary": "Delete a cinema",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Cinema ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            },
+            "patch": {
                 "security": [
                     {
                         "Token": []
@@ -440,50 +484,6 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/models.Cinema"
                         }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/utils.Response"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/utils.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/utils.Response"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "Token": []
-                    }
-                ],
-                "description": "Delete a cinema from database by ID",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Cinema"
-                ],
-                "summary": "Delete a cinema",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Cinema ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
                     }
                 ],
                 "responses": {
@@ -1676,7 +1676,51 @@ const docTemplate = `{
                     }
                 }
             },
-            "put": {
+            "delete": {
+                "security": [
+                    {
+                        "Token": []
+                    }
+                ],
+                "description": "Delete a payment method from database by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payment"
+                ],
+                "summary": "Delete a payment method",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Payment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            },
+            "patch": {
                 "security": [
                     {
                         "Token": []
@@ -1731,35 +1775,95 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
-            "delete": {
+            }
+        },
+        "/profile": {
+            "get": {
                 "security": [
                     {
                         "Token": []
                     }
                 ],
-                "description": "Delete a payment method from database by ID",
+                "description": "Retrieve the profile data of the authenticated user",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Payment"
+                    "Profile"
                 ],
-                "summary": "Delete a payment method",
+                "summary": "Get User Profile",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "results": {
+                                            "$ref": "#/definitions/dto.Profile"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "Token": []
+                    }
+                ],
+                "description": "Update the profile of the authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Update User Profile",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "Payment ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
+                        "description": "Profile Request Body",
+                        "name": "profile",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.ProfileRequest"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/utils.Response"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "results": {
+                                            "$ref": "#/definitions/dto.ProfileRequest"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
@@ -2077,9 +2181,6 @@ const docTemplate = `{
                 },
                 "priceTotal": {
                     "type": "integer"
-                },
-                "userId": {
-                    "type": "integer"
                 }
             }
         },
@@ -2090,9 +2191,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "newpassword": {
-                    "type": "string"
-                },
-                "oldPassword": {
                     "type": "string"
                 },
                 "otp": {
@@ -2114,9 +2212,6 @@ const docTemplate = `{
         "dto.HistoryReq": {
             "type": "object",
             "properties": {
-                "id": {
-                    "type": "integer"
-                },
                 "id_trx": {
                     "type": "integer"
                 },
@@ -2135,6 +2230,40 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.Profile": {
+            "type": "object",
+            "properties": {
+                "fullname": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "id_user": {
+                    "type": "integer"
+                },
+                "image": {
+                    "type": "string"
+                },
+                "phoneNumber": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.ProfileRequest": {
+            "type": "object",
+            "properties": {
+                "fullname": {
+                    "type": "string"
+                },
+                "image": {
+                    "type": "string"
+                },
+                "phoneNumber": {
                     "type": "string"
                 }
             }
@@ -2159,34 +2288,16 @@ const docTemplate = `{
         "dto.TransactionDetailData": {
             "type": "object",
             "properties": {
-                "cinemaName": {
-                    "type": "string"
-                },
                 "customerName": {
                     "type": "string"
                 },
                 "customerPhone": {
                     "type": "string"
                 },
-                "date": {
-                    "type": "string"
-                },
                 "id": {
                     "type": "integer"
                 },
-                "location": {
-                    "type": "string"
-                },
-                "movieTitle": {
-                    "type": "string"
-                },
-                "paymentMethodName": {
-                    "type": "string"
-                },
                 "seat": {
-                    "type": "string"
-                },
-                "time": {
                     "type": "string"
                 },
                 "transactionId": {
@@ -2220,6 +2331,12 @@ const docTemplate = `{
                 },
                 "time": {
                     "type": "string"
+                },
+                "transactionDetai": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.TransactionDetailData"
+                    }
                 },
                 "userId": {
                     "type": "integer"

@@ -2,6 +2,7 @@ package controller
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 	"weeklytickits/dto"
 	"weeklytickits/models"
@@ -9,14 +10,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 )
-
-func MapProfileRequestToDB(req dto.ProfileRequest) dto.Profile {
-	return dto.Profile{
-		Fullname: toNullString(req.Fullname),
-		Phone:    toNullString(req.Phone),
-		Image:    toNullString(req.Image),
-	}
-}
 
 func toNullString(s *string) sql.NullString {
 	if s != nil {
@@ -36,6 +29,7 @@ func toNullString(s *string) sql.NullString {
 // @Router /profile [get]
 func GetUserProfile(ctx *gin.Context) {
 	userId, _ := ctx.Get("userID")
+	fmt.Println(userId.(int))
 	data, err := models.GetProfileByUserId(userId.(int))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, utils.Response{
@@ -45,6 +39,7 @@ func GetUserProfile(ctx *gin.Context) {
 		})
 		return
 	}
+
 	ctx.JSON(http.StatusOK, utils.Response{
 		Success: true,
 		Message: "OK",
@@ -66,7 +61,7 @@ func GetUserProfile(ctx *gin.Context) {
 // @Router /profile [patch]
 func UpdateProfileByUserId(ctx *gin.Context) {
 	userId, _ := ctx.Get("userID")
-	var req dto.ProfileRequest
+	var req dto.Profile
 
 	err := ctx.ShouldBind(&req)
 	if err != nil {
@@ -77,9 +72,8 @@ func UpdateProfileByUserId(ctx *gin.Context) {
 		})
 		return
 	}
-	profile := MapProfileRequestToDB(req)
 
-	err = models.UpdateProfile(userId.(int), profile)
+	err = models.UpdateProfile(userId.(int), req)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.Response{
 			Success: false,

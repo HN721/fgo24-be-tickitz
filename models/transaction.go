@@ -29,7 +29,7 @@ type TransactionDetail struct {
 	Date              time.Time `json:"date"`
 	Location          string    `json:"location"`
 	PriceTotal        int       `json:"priceTotal"`
-	UserId            int       `json:"userId"`
+	UserId            int       `json:"userId,omitempty"`
 	MovieId           int       `json:"movieId"`
 	MovieTitle        string    `json:"movieTitle"`
 	CinemaId          int       `json:"cinemaId"`
@@ -70,7 +70,7 @@ func IsSeatAvailable(ctx context.Context, tx pgx.Tx, seat string, movieId, cinem
 	return false, nil // seat sudah dipakai
 }
 
-func CreateTransactionWithDetails(tr Transaction, details []TransactionDetailRequest) error {
+func CreateTransactionWithDetails(tr Transaction, details []TransactionDetailRequest, userId int) error {
 	conn, err := utils.DBConnect()
 	fmt.Println(tr.UserId)
 	if err != nil {
@@ -100,7 +100,7 @@ func CreateTransactionWithDetails(tr Transaction, details []TransactionDetailReq
 		tr.Time.Format("15:04:05"),
 		tr.Date.Format("2006-01-02"),
 		tr.PriceTotal,
-		tr.UserId,
+		userId,
 		tr.MovieId,
 		tr.CinemaId,
 		tr.PaymentMethodId,

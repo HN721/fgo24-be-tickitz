@@ -1,21 +1,11 @@
 package dto
 
-import "time"
-
 type TransactionDetailData struct {
-	ID                int       `json:"id"`
-	TransactionId     int       `json:"transactionId"`
-	CustomerName      string    `json:"customerName"`
-	CustomerPhone     string    `json:"customerPhone"`
-	Seat              string    `json:"seat"`
-	Location          string    `json:"location,omitempty"`
-	Time              time.Time `json:"-"`
-	Date              time.Time `json:"-"`
-	TimeString        string    `json:"time"`
-	DateString        string    `json:"date"`
-	MovieTitle        string    `json:"movieTitle"`
-	CinemaName        string    `json:"cinemaName"`
-	PaymentMethodName string    `json:"paymentMethodName"`
+	ID            int    `json:"id"`
+	TransactionId int    `json:"transactionId" `
+	CustomerName  string `json:"customerName" db:"costumer_name"`
+	CustomerPhone string `json:"customerPhone" db:"costumer_phone"`
+	Seat          string `json:"seat"`
 }
 type TransactionResponses struct {
 	Id                int    `json:"id"`

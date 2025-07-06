@@ -11,10 +11,8 @@ type RegisterResquest struct {
 	ConfirmPassword string `json:"confirmPassword"`
 }
 type ChangePassword struct {
-	Email string `json:"email"`
-
+	Email       string `json:"email"`
 	OTP         int    `json:"otp"`
-	OldPassword string `json:"oldPassword"`
 	NewPassword string `json:"newpassword"`
 }
 

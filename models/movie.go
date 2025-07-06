@@ -79,7 +79,7 @@ func FilterMoviesByGenre(genreName string) ([]Movies, error) {
 	GROUP BY m.id, m.title, m.synopsis, m.background, m.poster, m.release_date, m.duration, m.price
 	`
 
-	genrePattern := "%" + genreName + "%" // Agar bisa partial match
+	genrePattern := "%" + genreName + "%"
 	rows, err := conn.Query(context.Background(), query, genrePattern)
 	if err != nil {
 		return nil, err
