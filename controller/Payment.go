@@ -125,7 +125,7 @@ func CreatePayment(ctx *gin.Context) {
 // @Failure 400 {object} utils.Response
 // @Failure 500 {object} utils.Response
 // @Security Token
-// @Router /payment/{id} [put]
+// @Router /payment/{id} [patch]
 func UpdatePayment(ctx *gin.Context) {
 	idParam := ctx.Param("id")
 	id, err := strconv.Atoi(idParam)

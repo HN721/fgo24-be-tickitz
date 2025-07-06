@@ -25,6 +25,15 @@ func toNullString(s *string) sql.NullString {
 	return sql.NullString{Valid: false}
 }
 
+// GetUserProfile godoc
+// @Summary Get User Profile
+// @Description Retrieve the profile data of the authenticated user
+// @Tags Profile
+// @Produce json
+// @Success 200 {object} utils.Response{results=dto.Profile}
+// @Failure 400 {object} utils.Response
+// @Security Token
+// @Router /profile [get]
 func GetUserProfile(ctx *gin.Context) {
 	userId, _ := ctx.Get("userID")
 	data, err := models.GetProfileByUserId(userId.(int))
@@ -42,6 +51,19 @@ func GetUserProfile(ctx *gin.Context) {
 		Results: data,
 	})
 }
+
+// UpdateProfileByUserId godoc
+// @Summary Update User Profile
+// @Description Update the profile of the authenticated user
+// @Tags Profile
+// @Accept json
+// @Produce json
+// @Param profile body dto.ProfileRequest true "Profile Request Body"
+// @Success 200 {object} utils.Response{results=dto.ProfileRequest}
+// @Failure 400 {object} utils.Response
+// @Failure 500 {object} utils.Response
+// @Security Token
+// @Router /profile [patch]
 func UpdateProfileByUserId(ctx *gin.Context) {
 	userId, _ := ctx.Get("userID")
 	var req dto.ProfileRequest

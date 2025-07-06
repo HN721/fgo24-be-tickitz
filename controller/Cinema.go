@@ -125,7 +125,7 @@ func CreateCinema(ctx *gin.Context) {
 // @Success 200 {object} utils.Response
 // @Failure 400 {object} utils.Response
 // @Failure 500 {object} utils.Response
-// @Router /cinema/{id} [put]
+// @Router /cinema/{id} [patch]
 func UpdateCinema(ctx *gin.Context) {
 	idParam := ctx.Param("id")
 	id, err := strconv.Atoi(idParam)
