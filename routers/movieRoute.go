@@ -13,7 +13,7 @@ func movieRoute(r *gin.RouterGroup) {
 
 	r.GET("", controller.GetMovies)
 	r.POST("", middleware.AuthMiddleware(), controller.CreateMovies)
-	r.PATCH("/:id", middleware.AuthMiddleware(), controller.UpdateMovies)
+	r.PATCH("/:id", controller.UpdateMovies)
 	r.DELETE("/:id", middleware.AuthMiddleware(), controller.DeleteMovies)
 	// genre
 	r.GET("/genre", controller.GetGenre)

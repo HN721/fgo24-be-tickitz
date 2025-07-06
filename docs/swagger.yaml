@@ -36,6 +36,15 @@ definitions:
     required:
     - email
     type: object
+  dto.HistoryReq:
+    properties:
+      id_trx:
+        type: integer
+      note:
+        type: string
+      status:
+        type: string
+    type: object
   dto.LoginRequest:
     properties:
       email:
@@ -160,10 +169,37 @@ definitions:
         type: string
       title:
         type: string
-    required:
-    - casts
-    - directors
-    - genres
+    type: object
+  models.MoviesReq:
+    properties:
+      background:
+        type: string
+      casts:
+        items:
+          type: integer
+        type: array
+      directors:
+        items:
+          type: integer
+        type: array
+      duration:
+        type: integer
+      genres:
+        items:
+          type: integer
+        type: array
+      id:
+        type: integer
+      poster:
+        type: string
+      price:
+        type: integer
+      releaseDate:
+        type: string
+      synopsis:
+        type: string
+      title:
+        type: string
     type: object
   models.Payment:
     properties:
@@ -365,8 +401,6 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/utils.Response'
-      security:
-      - Token: []
       summary: Change user password
       tags:
       - Auth
@@ -515,9 +549,76 @@ paths:
       summary: Update an existing cinema
       tags:
       - Cinema
+  /history:
+    get:
+      description: Get list of all transaction histories
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - Token: []
+      summary: Get all history transactions
+      tags:
+      - History
+  /history/{id}:
+    patch:
+      consumes:
+      - application/json
+      description: Update status and note of a history transaction by ID
+      parameters:
+      - description: History ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: History Update Request
+        in: body
+        name: history
+        required: true
+        schema:
+          $ref: '#/definitions/dto.HistoryReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - Token: []
+      summary: Update a history transaction status
+      tags:
+      - History
   /movie:
     get:
-      description: Retrieve all movies
+      description: Retrieve all movies with search and pagination
+      parameters:
+      - description: Search by title
+        in: query
+        name: search
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 5
+        description: Limit per page
+        in: query
+        name: limit
+        type: integer
       produces:
       - application/json
       responses:
@@ -551,7 +652,7 @@ paths:
         name: movie
         required: true
         schema:
-          $ref: '#/definitions/models.Movies'
+          $ref: '#/definitions/models.MoviesReq'
       produces:
       - application/json
       responses:

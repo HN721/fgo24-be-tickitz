@@ -78,9 +78,27 @@ func UpdateCinema(id int, cinema Cinema) error {
 	}
 	defer conn.Conn().Close(context.Background())
 
+	var oldCinema Cinema
+	queryGet := `SELECT name, logo FROM cinema WHERE id = $1`
+	err = conn.QueryRow(context.Background(), queryGet, id).Scan(&oldCinema.Name, &oldCinema.Logo)
+	if err != nil {
+		return fmt.Errorf("failed to get existing cinema: %w", err)
+	}
+
+	if cinema.Name == "" {
+		cinema.Name = oldCinema.Name
+	}
+	if cinema.Logo == "" {
+		cinema.Logo = oldCinema.Logo
+	}
+
 	query := `UPDATE cinema SET name = $1, logo = $2 WHERE id = $3`
 	_, err = conn.Exec(context.Background(), query, cinema.Name, cinema.Logo, id)
-	return err
+	if err != nil {
+		return fmt.Errorf("failed to update cinema: %w", err)
+	}
+
+	return nil
 }
 
 func DeleteCinema(id int) error {

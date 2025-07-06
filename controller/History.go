@@ -10,6 +10,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// GetHistory godoc
+// @Summary Get all history transactions
+// @Description Get list of all transaction histories
+// @Tags History
+// @Produce json
+// @Success 200 {object} utils.Response
+// @Failure 400 {object} utils.Response
+// @Router /history [get]
+// @Security Token
 func GetHistory(ctx *gin.Context) {
 	data, err := models.GetHistory()
 	if err != nil {
@@ -25,6 +34,19 @@ func GetHistory(ctx *gin.Context) {
 		Results: data,
 	})
 }
+
+// UpdateHistory godoc
+// @Summary Update a history transaction status
+// @Description Update status and note of a history transaction by ID
+// @Tags History
+// @Accept json
+// @Produce json
+// @Param id path int true "History ID"
+// @Param history body dto.HistoryReq true "History Update Request"
+// @Success 200 {object} utils.Response
+// @Failure 400 {object} utils.Response
+// @Router /history/{id} [patch]
+// @Security Token
 func UpdateHistory(ctx *gin.Context) {
 	historyId := ctx.Param("id")
 	id, _ := strconv.Atoi(historyId)

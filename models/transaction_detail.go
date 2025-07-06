@@ -38,7 +38,7 @@ func GetTransactionDetailWithInfoByTransactionId(transactionId int) ([]dto.Trans
 	if err != nil {
 		return nil, fmt.Errorf("error querying transaction detail with info: %v", err)
 	}
-	defer rows.Close()
+	defer conn.Conn().Close(context.Background())
 
 	var details []dto.TransactionDetailData
 	for rows.Next() {

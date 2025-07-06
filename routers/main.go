@@ -13,6 +13,7 @@ import (
 
 func CombineRouter(r *gin.Engine) {
 	authRouter(r.Group("/auth"))
+	profileRoute(r.Group("/profile", middleware.AuthMiddleware()))
 	movieRoute(r.Group("/movie"))
 	cinemaRouter(r.Group("/cinema", middleware.AdminMiddleware()))
 	transactionRoutes(r.Group("/trx", middleware.AuthMiddleware()))

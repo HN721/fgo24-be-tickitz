@@ -18,9 +18,22 @@ type Movies struct {
 	ReleaseDate time.Time ` json:"releaseDate" db:"release_date"`
 	Duration    int       `json:"duration" db:"duration"`
 	Price       int       `json:"price" db:"price"`
-	Genres      []string  `json:"genres" binding:"required"`
-	Casts       []string  `json:"casts" binding:"required"`
-	Directors   []string  `json:"directors" binding:"required"`
+	Genres      []string  `json:"genres" `
+	Casts       []string  `json:"casts" `
+	Directors   []string  `json:"directors" `
+}
+type MoviesReq struct {
+	Id          int       `json:"id,omitempty" db:"id"`
+	Title       string    `json:"title" db:"title"`
+	Synopsis    string    `json:"synopsis" db:"synopsis"`
+	Background  string    ` json:"background" db:"background"`
+	Poster      string    ` json:"poster" db:"poster"`
+	ReleaseDate time.Time ` json:"releaseDate" db:"release_date"`
+	Duration    int       `json:"duration" db:"duration"`
+	Price       int       `json:"price" db:"price"`
+	Genres      []int     `json:"genres" `
+	Casts       []int     `json:"casts" `
+	Directors   []int     `json:"directors" `
 }
 type Genres struct {
 	Id   int    `json:"id" db:"id"`
@@ -114,37 +127,45 @@ func NowShowingMovies() ([]Movies, error) {
 	return results, err
 }
 
-func GetAllMovies() ([]Movies, error) {
+func GetAllMovies(search string, page, limit int) ([]Movies, error) {
 	conn, err := utils.DBConnect()
 	if err != nil {
 		return nil, err
 	}
 	defer conn.Conn().Close(context.Background())
 
-	query := `
-	SELECT 
-    m.id,
-    m.title,
-    m.synopsis,
-    m.background,
-    m.poster,
-    m.release_date,
-    m.duration,
-    m.price,
-    ARRAY_REMOVE(ARRAY_AGG(DISTINCT g.name), NULL) AS genres,
-    ARRAY_REMOVE(ARRAY_AGG(DISTINCT a.fullname), NULL) AS casts,
-    ARRAY_REMOVE(ARRAY_AGG(DISTINCT d.fullname), NULL) AS directors
-FROM movies m
-LEFT JOIN movie_genre mg ON m.id = mg.movie_id
-LEFT JOIN genres g ON mg.genre_id = g.id
-LEFT JOIN movie_actors ma ON m.id = ma.movie_id
-LEFT JOIN actors a ON ma.actor_id = a.id
-LEFT JOIN movie_director md ON m.id = md.movie_id
-LEFT JOIN directors d ON md.director_id = d.id
-GROUP BY m.id, m.title, m.synopsis, m.background, m.poster, m.release_date, m.duration, m.price
-	`
+	offset := (page - 1) * limit
 
-	rows, err := conn.Query(context.Background(), query)
+	baseQuery := `
+    SELECT 
+        m.id,
+        m.title,
+        m.synopsis,
+        m.background,
+        m.poster,
+        m.release_date,
+        m.duration,
+        m.price,
+        ARRAY_REMOVE(ARRAY_AGG(DISTINCT g.name), NULL) AS genres,
+        ARRAY_REMOVE(ARRAY_AGG(DISTINCT a.fullname), NULL) AS casts,
+        ARRAY_REMOVE(ARRAY_AGG(DISTINCT d.fullname), NULL) AS directors
+    FROM movies m
+    LEFT JOIN movie_genre mg ON m.id = mg.movie_id
+    LEFT JOIN genres g ON mg.genre_id = g.id
+    LEFT JOIN movie_actors ma ON m.id = ma.movie_id
+    LEFT JOIN actors a ON ma.actor_id = a.id
+    LEFT JOIN movie_director md ON m.id = md.movie_id
+    LEFT JOIN directors d ON md.director_id = d.id
+    WHERE LOWER(m.title) LIKE LOWER($1)
+    GROUP BY m.id, m.title, m.synopsis, m.background, m.poster, m.release_date, m.duration, m.price
+    ORDER BY m.id DESC
+    LIMIT $2 OFFSET $3
+    `
+
+	// Tambahkan wildcard search
+	searchPattern := "%" + search + "%"
+
+	rows, err := conn.Query(context.Background(), baseQuery, searchPattern, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -157,7 +178,7 @@ GROUP BY m.id, m.title, m.synopsis, m.background, m.poster, m.release_date, m.du
 	return data, nil
 }
 
-func InsertMovies(movie Movies) error {
+func InsertMovies(movie MoviesReq) error {
 	conn, err := utils.DBConnect()
 	if err != nil {
 		return err
@@ -232,6 +253,46 @@ func UpdateMovies(movie Movies, movieId int) error {
 	}
 	defer tx.Rollback(context.Background())
 
+	var oldMovie Movies
+	queryGet := `
+		SELECT title, synopsis, background, poster, release_date, duration, price
+		FROM movies
+		WHERE id = $1`
+	err = conn.QueryRow(context.Background(), queryGet, movieId).Scan(
+		&oldMovie.Title,
+		&oldMovie.Synopsis,
+		&oldMovie.Background,
+		&oldMovie.Poster,
+		&oldMovie.ReleaseDate,
+		&oldMovie.Duration,
+		&oldMovie.Price,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to get existing movie: %w", err)
+	}
+
+	if movie.Title == "" {
+		movie.Title = oldMovie.Title
+	}
+	if movie.Synopsis == "" {
+		movie.Synopsis = oldMovie.Synopsis
+	}
+	if movie.Background == "" {
+		movie.Background = oldMovie.Background
+	}
+	if movie.Poster == "" {
+		movie.Poster = oldMovie.Poster
+	}
+	if movie.ReleaseDate.IsZero() {
+		movie.ReleaseDate = oldMovie.ReleaseDate
+	}
+	if movie.Duration == 0 {
+		movie.Duration = oldMovie.Duration
+	}
+	if movie.Price == 0 {
+		movie.Price = oldMovie.Price
+	}
+
 	query := `
 		UPDATE movies 
 		SET title = $1, synopsis = $2, background = $3, poster = $4, release_date = $5, duration = $6, price = $7
@@ -249,38 +310,35 @@ func UpdateMovies(movie Movies, movieId int) error {
 	if err != nil {
 		return err
 	}
-	if result.RowsAffected() == 0 {
+	rowsAffected := result.RowsAffected()
+	if rowsAffected == 0 {
 		return fmt.Errorf("movie with id %d not found", movieId)
 	}
 
-	_, err = tx.Exec(context.Background(), `DELETE FROM movie_genre WHERE movie_id = $1`, movieId)
-	if err != nil {
+	if _, err = tx.Exec(context.Background(), `DELETE FROM movie_genre WHERE movie_id = $1`, movieId); err != nil {
 		return err
 	}
-	_, err = tx.Exec(context.Background(), `DELETE FROM movie_actors WHERE movie_id = $1`, movieId)
-	if err != nil {
+	if _, err = tx.Exec(context.Background(), `DELETE FROM movie_actors WHERE movie_id = $1`, movieId); err != nil {
 		return err
 	}
-	_, err = tx.Exec(context.Background(), `DELETE FROM movie_director WHERE movie_id = $1`, movieId)
-	if err != nil {
+	if _, err = tx.Exec(context.Background(), `DELETE FROM movie_director WHERE movie_id = $1`, movieId); err != nil {
 		return err
 	}
 
 	for _, genreId := range movie.Genres {
-		_, err = tx.Exec(context.Background(), `INSERT INTO movie_genre (movie_id, genre_id) VALUES ($1, $2)`, movieId, genreId)
-		if err != nil {
+		if _, err = tx.Exec(context.Background(), `INSERT INTO movie_genre (movie_id, genre_id) VALUES ($1, $2)`, movieId, genreId); err != nil {
 			return err
 		}
 	}
+
 	for _, actorId := range movie.Casts {
-		_, err = tx.Exec(context.Background(), `INSERT INTO movie_actors (movie_id, actor_id) VALUES ($1, $2)`, movieId, actorId)
-		if err != nil {
+		if _, err = tx.Exec(context.Background(), `INSERT INTO movie_actors (movie_id, actor_id) VALUES ($1, $2)`, movieId, actorId); err != nil {
 			return err
 		}
 	}
+
 	for _, directorId := range movie.Directors {
-		_, err = tx.Exec(context.Background(), `INSERT INTO movie_director (movie_id, director_id) VALUES ($1, $2)`, movieId, directorId)
-		if err != nil {
+		if _, err = tx.Exec(context.Background(), `INSERT INTO movie_director (movie_id, director_id) VALUES ($1, $2)`, movieId, directorId); err != nil {
 			return err
 		}
 	}

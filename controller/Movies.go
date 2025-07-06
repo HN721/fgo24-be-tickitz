@@ -64,19 +64,29 @@ func GetNowShoinfMovies(ctx *gin.Context) {
 }
 
 // @Summary Get Upcoming movies
-// @Description Retrieve all movies
+// @Description Retrieve all movies with search and pagination
 // @Tags Movies
 // @Produce json
+// @Param search query string false "Search by title"
+// @Param page query int false "Page number" default(1)
+// @Param limit query int false "Limit per page" default(5)
 // @Success 200 {object} utils.Response{results=[]models.Movies}
 // @Failure 500 {object} utils.Response
 // @Security Token
 // @Router /movie [get]
 func GetMovies(ctx *gin.Context) {
-	data, err := models.GetAllMovies()
+	search := ctx.Query("search")
+	page := ctx.DefaultQuery("page", "1")
+	limit := ctx.DefaultQuery("limit", "5")
+
+	pageInt, _ := strconv.Atoi(page)
+	limitInt, _ := strconv.Atoi(limit)
+
+	movies, err := models.GetAllMovies(search, pageInt, limitInt)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.Response{
 			Success: false,
-			Message: "Gagal mengambil data film",
+			Message: "Error retrieving movies",
 			Error:   err.Error(),
 		})
 		return
@@ -84,10 +94,9 @@ func GetMovies(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, utils.Response{
 		Success: true,
-		Message: "Berhasil mengambil data film",
-		Results: data,
+		Message: "Success get all movies",
+		Results: movies,
 	})
-
 }
 
 // @Summary Create
@@ -95,13 +104,13 @@ func GetMovies(ctx *gin.Context) {
 // @Tags Admin
 // @Produce json
 // @Accept json
-// @Param movie body models.Movies true "Movie Data"
+// @Param movie body models.MoviesReq true "Movie Data"
 // @Success 200 {object} utils.Response
 // @Failure 500 {object} utils.Response
 // @Security Token
 // @Router /movie [post]
 func CreateMovies(ctx *gin.Context) {
-	var req models.Movies
+	var req models.MoviesReq
 
 	err := ctx.ShouldBind(&req)
 	if err != nil {

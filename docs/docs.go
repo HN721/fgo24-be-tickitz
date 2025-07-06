@@ -221,11 +221,6 @@ const docTemplate = `{
         },
         "/auth/reset": {
             "post": {
-                "security": [
-                    {
-                        "Token": []
-                    }
-                ],
                 "description": "Change password using OTP and old password verification",
                 "consumes": [
                     "application/json"
@@ -498,6 +493,89 @@ const docTemplate = `{
                 }
             }
         },
+        "/history": {
+            "get": {
+                "security": [
+                    {
+                        "Token": []
+                    }
+                ],
+                "description": "Get list of all transaction histories",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "History"
+                ],
+                "summary": "Get all history transactions",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/history/{id}": {
+            "patch": {
+                "security": [
+                    {
+                        "Token": []
+                    }
+                ],
+                "description": "Update status and note of a history transaction by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "History"
+                ],
+                "summary": "Update a history transaction status",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "History ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "History Update Request",
+                        "name": "history",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.HistoryReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/movie": {
             "get": {
                 "security": [
@@ -505,7 +583,7 @@ const docTemplate = `{
                         "Token": []
                     }
                 ],
-                "description": "Retrieve all movies",
+                "description": "Retrieve all movies with search and pagination",
                 "produces": [
                     "application/json"
                 ],
@@ -513,6 +591,28 @@ const docTemplate = `{
                     "Movies"
                 ],
                 "summary": "Get Upcoming movies",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search by title",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 5,
+                        "description": "Limit per page",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -567,7 +667,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Movies"
+                            "$ref": "#/definitions/models.MoviesReq"
                         }
                     }
                 ],
@@ -1860,6 +1960,20 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.HistoryReq": {
+            "type": "object",
+            "properties": {
+                "id_trx": {
+                    "type": "integer"
+                },
+                "note": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.LoginRequest": {
             "type": "object",
             "properties": {
@@ -2007,11 +2121,6 @@ const docTemplate = `{
         },
         "models.Movies": {
             "type": "object",
-            "required": [
-                "casts",
-                "directors",
-                "genres"
-            ],
             "properties": {
                 "background": {
                     "type": "string"
@@ -2035,6 +2144,53 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "type": "string"
+                    }
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "poster": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "integer"
+                },
+                "releaseDate": {
+                    "type": "string"
+                },
+                "synopsis": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.MoviesReq": {
+            "type": "object",
+            "properties": {
+                "background": {
+                    "type": "string"
+                },
+                "casts": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "directors": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "duration": {
+                    "type": "integer"
+                },
+                "genres": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
                     }
                 },
                 "id": {

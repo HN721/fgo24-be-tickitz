@@ -152,7 +152,6 @@ func Login(ctx *gin.Context) {
 // @Tags Auth
 // @Accept json
 // @Produce json
-// @Security Token
 // @Param ChangePassword body dto.ChangePassword true "Change Password Data"
 // @Success 201 {object} utils.Response
 // @Failure 400 {object} utils.Response
@@ -190,8 +189,8 @@ func ChangePassword(ctx *gin.Context) {
 // @Produce json
 // @Security Token
 // @Param ForgotPassword body dto.ForgotPasswordRequest true "Forgot Password Data"
-// @Success 200 {object} utils.Response
-// @Failure 400 {object} utils.Response
+// @Success 200 {object} utils.Response{}
+// @Failure 400 {object} utils.Response{}
 // @Router /auth/forgot [post]
 func ForgotPassword(ctx *gin.Context) {
 	var req dto.ForgotPasswordRequest
