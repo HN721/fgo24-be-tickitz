@@ -34,6 +34,8 @@ definitions:
     type: object
   dto.HistoryReq:
     properties:
+      id:
+        type: integer
       id_trx:
         type: integer
       note:
@@ -112,10 +114,6 @@ definitions:
         type: integer
       time:
         type: string
-      transactionDetai:
-        items:
-          $ref: '#/definitions/dto.TransactionDetailData'
-        type: array
       userId:
         type: integer
     type: object

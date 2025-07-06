@@ -27,6 +27,7 @@ func GetHistory(ctx *gin.Context) {
 			Message: "Error",
 			Error:   err.Error(),
 		})
+		return
 	}
 	ctx.JSON(http.StatusOK, utils.Response{
 		Success: true,

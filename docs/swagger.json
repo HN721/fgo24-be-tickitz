@@ -2204,6 +2204,9 @@
         "dto.HistoryReq": {
             "type": "object",
             "properties": {
+                "id": {
+                    "type": "integer"
+                },
                 "id_trx": {
                     "type": "integer"
                 },
@@ -2323,12 +2326,6 @@
                 },
                 "time": {
                     "type": "string"
-                },
-                "transactionDetai": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dto.TransactionDetailData"
-                    }
                 },
                 "userId": {
                     "type": "integer"

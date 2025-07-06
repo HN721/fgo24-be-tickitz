@@ -2212,6 +2212,9 @@ const docTemplate = `{
         "dto.HistoryReq": {
             "type": "object",
             "properties": {
+                "id": {
+                    "type": "integer"
+                },
                 "id_trx": {
                     "type": "integer"
                 },
@@ -2331,12 +2334,6 @@ const docTemplate = `{
                 },
                 "time": {
                     "type": "string"
-                },
-                "transactionDetai": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dto.TransactionDetailData"
-                    }
                 },
                 "userId": {
                     "type": "integer"
