@@ -66,12 +66,12 @@ jobs:
 
             echo "✅ Run migrations"
             docker run --rm \
-            --network deploy_netapp \ 
-            -v "$PWD/migrations:/migrations" \
-            migrate/migrate \
-            -path=/migrations \
-            -database "postgres://postgres:721@db:5432/tikcitz?sslmode=disable" \
-             up
+              --network deploy_netapp \
+              -v "/home/hosea/deploy/migrations:/migrations" \
+              migrate/migrate \
+              -path=/migrations \
+              -database "postgres://postgres:721@db:5432/tikcitz?sslmode=disable" \
+              up
 
             echo "✅ Start App"
             docker compose up -d app
