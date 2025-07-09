@@ -1,4 +1,5 @@
-name: Deploy Backend to VPS
+name: Push Backend Image to GHCR and Deploy to VPS
+run-name: Release Image GHCR
 
 on:
   push:
@@ -6,52 +7,40 @@ on:
       - main
 
 jobs:
-  deploy:
+  build-and-push:
+    name: Build & Push Docker Image to GHCR
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Code
         uses: actions/checkout@v4
 
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: ghcr.io/hn721/fgo24-be-tickitz:latest
+      - name: Build Docker Image
+        run: docker build -t ghcr.io/hn721/fgo24-be-tickitz:latest .
 
-      - name: Copy db to VPS
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: 146.190.102.54
-          username: hosea
-          port: 9201
-          key: ${{ secrets.VPS_PRIVATE_KEY }}
-          source: |
-            db
-          target: /home/hosea/deploy
+      - name: Push Docker Image to GHCR
+        run: docker push ghcr.io/hn721/fgo24-be-tickitz:latest
 
-      - name: Deploy to VPS
+  deploy:
+    name: Deploy to VPS
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Connect & Deploy to VPS
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: 146.190.102.54
           username: hosea
-          port: 9201
           key: ${{ secrets.VPS_PRIVATE_KEY }}
+          port: 9201
           script: |
-            cd /home/hosea/deploy
-            docker compose pull
-            docker compose up -d db redis
-            sleep 10  # Tunggu db ready
-            docker compose run --rm migration
-            docker compose up -d app
+            docker login ghcr.io -u ${{ github.actor }} --password ${{ secrets.HOSEA_TOKEN }}
+            docker pull ghcr.io/hn721/fgo24-be-tickitz:latest
+            echo "Stopping existing container..."
+            docker compose down || true
+            echo "Starting Docker Compose..."
+            docker compose up -d
