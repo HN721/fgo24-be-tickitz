@@ -65,7 +65,13 @@ jobs:
             sleep 10
 
             echo "✅ Run migrations"
-            docker compose run --rm migration
+            docker run --rm \
+            --network deploy_netapp \ 
+            -v "$PWD/migrations:/migrations" \
+            migrate/migrate \
+            -path=/migrations \
+            -database "postgres://postgres:721@db:5432/tikcitz?sslmode=disable" \
+             up
 
             echo "✅ Start App"
             docker compose up -d app
