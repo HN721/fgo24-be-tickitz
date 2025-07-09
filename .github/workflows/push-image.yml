@@ -33,7 +33,7 @@ jobs:
         uses: appleboy/scp-action@v0.1.4
         with:
           host: 146.190.102.54
-          username: ${{ secrets.VPS_USER }}
+          username: hosea
           port: 9201
           key: ${{ secrets.VPS_PRIVATE_KEY }}
           source: "migrations"
@@ -43,7 +43,7 @@ jobs:
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: 146.190.102.54
-          username: ${{ secrets.VPS_USER }}
+          username: hosea
           key: ${{ secrets.VPS_PRIVATE_KEY }}
           port: 9201
           script: |
