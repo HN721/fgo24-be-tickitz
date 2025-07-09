@@ -5,7 +5,7 @@ type Profile struct {
 	Fullname string `json:"fullname,omitempty"`
 	Phone    string `json:"phoneNumber,omitempty" db:"phone_number"`
 	Image    string `json:"image,omitempty" db:"profile_image"`
-	IdUser   int    `json:"id_user" db:"id_user"`
+	IdUser   int    `json:"id_user,omitempty" db:"id_user"`
 }
 type ProfileRequest struct {
 	Fullname *string `json:"fullname"`

@@ -12,7 +12,7 @@ import (
 )
 
 type Users struct {
-	UserID       int    `json:"userId" db:"id"`
+	UserID       int    `json:"userId,omitempty" db:"id"`
 	Username     string `json:"username" form:"username"`
 	Phone_number string `json:"phone,omitempty" form:"phone"`
 	Email        string `json:"email,omitempty" form:"email"`
@@ -21,7 +21,7 @@ type Users struct {
 	Role         string `json:"role ,omitempty" form:"role"`
 }
 type UsersResponse struct {
-	UserID   int    `json:"userId" db:"id"`
+	UserID   int    `json:"userId,omitempty" db:"id"`
 	Username string `json:"username" db:"username"`
 	Email    string `json:"email" db:"email"`
 }

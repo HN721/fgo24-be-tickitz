@@ -655,6 +655,12 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+                        "description": "genre by title",
+                        "name": "genre",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "description": "Search by title",
                         "name": "search",
                         "in": "query"
@@ -2314,6 +2320,12 @@ const docTemplate = `{
                 "cinemaName": {
                     "type": "string"
                 },
+                "customerName": {
+                    "type": "string"
+                },
+                "customerPhone": {
+                    "type": "string"
+                },
                 "date": {
                     "type": "string"
                 },
@@ -2331,6 +2343,9 @@ const docTemplate = `{
                 },
                 "priceTotal": {
                     "type": "integer"
+                },
+                "seat": {
+                    "type": "string"
                 },
                 "time": {
                     "type": "string"

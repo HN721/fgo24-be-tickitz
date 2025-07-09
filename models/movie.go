@@ -172,7 +172,7 @@ func NowShowingMovies() ([]Movies, error) {
 	return results, err
 }
 
-func GetAllMovies(search string, page, limit int) ([]Movies, error) {
+func GetAllMovies(search string, genre string, page, limit int) ([]Movies, error) {
 	conn, err := utils.DBConnect()
 	if err != nil {
 		return nil, err
@@ -201,16 +201,15 @@ func GetAllMovies(search string, page, limit int) ([]Movies, error) {
     LEFT JOIN actors a ON ma.actor_id = a.id
     LEFT JOIN movie_director md ON m.id = md.movie_id
     LEFT JOIN directors d ON md.director_id = d.id
-    WHERE LOWER(m.title) LIKE LOWER($1)
+    WHERE LOWER(m.title) LIKE LOWER($1) AND LOWER(g.name) LIKE LOWER($2)
     GROUP BY m.id, m.title, m.synopsis, m.background, m.poster, m.release_date, m.duration, m.price
     ORDER BY m.id DESC
-    LIMIT $2 OFFSET $3
+    LIMIT $3 OFFSET $4
     `
 
-	// Tambahkan wildcard search
 	searchPattern := "%" + search + "%"
 
-	rows, err := conn.Query(context.Background(), baseQuery, searchPattern, limit, offset)
+	rows, err := conn.Query(context.Background(), baseQuery, searchPattern, genre, limit, offset)
 	if err != nil {
 		return nil, err
 	}

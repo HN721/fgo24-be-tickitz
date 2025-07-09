@@ -100,6 +100,10 @@ definitions:
     properties:
       cinemaName:
         type: string
+      customerName:
+        type: string
+      customerPhone:
+        type: string
       date:
         type: string
       id:
@@ -112,6 +116,8 @@ definitions:
         type: string
       priceTotal:
         type: integer
+      seat:
+        type: string
       time:
         type: string
       userId:
@@ -645,6 +651,10 @@ paths:
     get:
       description: Retrieve all movies with search and pagination
       parameters:
+      - description: genre by title
+        in: query
+        name: genre
+        type: string
       - description: Search by title
         in: query
         name: search

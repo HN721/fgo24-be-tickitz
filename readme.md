@@ -50,7 +50,7 @@ direction LR
     actors ||--o{ movie_actors : acts_in
     users {
         string id PK
-        string name
+        string username
         string email
         string password
         string role
@@ -58,6 +58,7 @@ direction LR
     }
     profile{
         int id PK
+        string fullname
          string phone_number
         string profile_image
         string id_user FK

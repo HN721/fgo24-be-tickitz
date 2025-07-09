@@ -78,7 +78,7 @@ func Register(ctx *gin.Context) {
 	if input.Password != input.ConfirmPassword {
 		ctx.JSON(http.StatusBadRequest, utils.Response{
 			Success: false,
-			Message: "Confirm",
+			Message: "Confirm Password Must be Match",
 		})
 		return
 	}
@@ -203,6 +203,7 @@ func ForgotPassword(ctx *gin.Context) {
 			Message: "Error",
 			Error:   err.Error(),
 		})
+		return
 	}
 	ctx.JSON(http.StatusOK, utils.Response{
 		Success: true,

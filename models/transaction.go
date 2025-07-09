@@ -36,6 +36,9 @@ type TransactionDetail struct {
 	CinemaName        string    `json:"cinemaName"`
 	PaymentMethodId   int       `json:"paymentMethodId"`
 	PaymentMethodName string    `json:"paymentMethodName"`
+	CustomerName      string    `json:"customerName" db:"costumer_name"`
+	CustomerPhone     string    `json:"customerPhone" db:"costumer_phone"`
+	Seat              []string  `json:"seat"`
 }
 type TransactionDetailRequest struct {
 	CustomerName  string `json:"customerName"`
@@ -269,12 +272,22 @@ func GetAllTransactions() ([]dto.TransactionResponses, error) {
 	t.id, t.time, t.date, t.price_total, t.location, t.user_id, 
 	t.movie_id, m.title as movie_title,
 	t.id_cinema, c.name as cinema_name,
-	t.id_payment_method, pm.name as payment_method_name
+	t.id_payment_method, pm.name as payment_method_name,
+	MAX(td.costumer_name) AS costumer_name,
+	MAX(td.costumer_phone) AS costumer_phone,
+	ARRAY_REMOVE(ARRAY_AGG(DISTINCT td.seat), NULL) AS seat
 FROM transactions t
 LEFT JOIN movies m ON t.movie_id = m.id
 LEFT JOIN cinema c ON t.id_cinema = c.id
 LEFT JOIN payment_method pm ON t.id_payment_method = pm.id
-		ORDER BY t.date DESC, t.time DESC
+LEFT JOIN transaction_detail td ON t.id = td.id_transaction
+GROUP BY 
+	t.id, t.time, t.date, t.price_total, t.location, t.user_id, 
+	t.movie_id, m.title,
+	t.id_cinema, c.name,
+	t.id_payment_method, pm.name
+ORDER BY t.date DESC, t.time DESC
+
 	`
 
 	rows, err := conn.Query(context.Background(), query)
@@ -299,6 +312,9 @@ LEFT JOIN payment_method pm ON t.id_payment_method = pm.id
 			&tr.CinemaName,
 			&tr.PaymentMethodId,
 			&tr.PaymentMethodName,
+			&tr.CustomerName,
+			&tr.CustomerPhone,
+			&tr.Seat,
 		)
 		if err != nil {
 			return nil, err
@@ -314,6 +330,9 @@ LEFT JOIN payment_method pm ON t.id_payment_method = pm.id
 			MovieTitle:        tr.MovieTitle,
 			CinemaName:        tr.CinemaName,
 			PaymentMethodName: tr.PaymentMethodName,
+			CustomerName:      tr.CustomerName,
+			CustomerPhone:     tr.CustomerPhone,
+			Seat:              tr.Seat,
 		}
 
 		transactions = append(transactions, resp)

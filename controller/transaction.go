@@ -46,11 +46,10 @@ func CreateTransaction(ctx *gin.Context) {
 	}
 
 	transaction := models.Transaction{
-		Time:       time.Now(),
-		Date:       time.Now(),
-		PriceTotal: req.PriceTotal,
-		Location:   req.Location,
-
+		Time:            time.Now(),
+		Date:            time.Now(),
+		PriceTotal:      req.PriceTotal,
+		Location:        req.Location,
 		MovieId:         req.MovieId,
 		CinemaId:        req.CinemaId,
 		PaymentMethodId: req.PaymentMethodId,

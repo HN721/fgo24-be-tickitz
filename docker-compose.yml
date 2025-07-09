@@ -1,0 +1,27 @@
+services:
+  app:
+     image: ghcr.io/hn721/fgo24-be-tickitz:latest
+     ports:
+      - 9203:8080
+     networks:
+      - netapp
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_PASSWORD=721
+    volumes:
+      - data_postgres:/var/lib/postgresql/data
+      - ./data.sql:/docker-entrypoint-initdb.d/data.sql
+    networks:
+      - netapp
+  redis:
+    image: redis
+    volumes:
+      - data_redis:/data
+    networks:
+      - netapp
+volumes:
+  data_postgres:
+  data_redis:
+networks:
+  netapp:

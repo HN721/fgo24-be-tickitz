@@ -102,6 +102,7 @@ func GetNowShoinfMovies(ctx *gin.Context) {
 // @Description Retrieve all movies with search and pagination
 // @Tags Movies
 // @Produce json
+// @Param genre query string false "genre by title"
 // @Param search query string false "Search by title"
 // @Param page query int false "Page number" default(1)
 // @Param limit query int false "Limit per page" default(5)
@@ -111,13 +112,14 @@ func GetNowShoinfMovies(ctx *gin.Context) {
 // @Router /movie [get]
 func GetMovies(ctx *gin.Context) {
 	search := ctx.Query("search")
+	genre := ctx.Query("genre")
 	page := ctx.DefaultQuery("page", "1")
 	limit := ctx.DefaultQuery("limit", "5")
 
 	pageInt, _ := strconv.Atoi(page)
 	limitInt, _ := strconv.Atoi(limit)
 
-	movies, err := models.GetAllMovies(search, pageInt, limitInt)
+	movies, err := models.GetAllMovies(search, genre, pageInt, limitInt)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.Response{
 			Success: false,
