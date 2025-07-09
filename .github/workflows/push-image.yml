@@ -36,7 +36,7 @@ jobs:
           username: hosea
           port: 9201
           key: ${{ secrets.VPS_PRIVATE_KEY }}
-          source: "./migrations/*"
+          source: "migrations"
           target: "/home/hosea/deploy"
 
       - name: SSH Deploy to VPS
