@@ -1,5 +1,4 @@
-name: Push Backend Image to GHCR and Deploy to VPS
-run-name: Release Image GHCR
+name: Build & Deploy to VPS
 
 on:
   push:
@@ -8,39 +7,64 @@ on:
 
 jobs:
   build-and-push:
-    name: Build & Push Docker Image to GHCR
+    name: Build & Push Docker Image
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Log in to GitHub Container Registry
+      - name: Log in to GHCR
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Build Docker Image
         run: docker build -t ghcr.io/hn721/fgo24-be-tickitz:latest .
 
-      - name: Push Docker Image to GHCR
+      - name: Push Docker Image
         run: docker push ghcr.io/hn721/fgo24-be-tickitz:latest
 
   deploy:
-    name: Deploy to VPS
+    name: Deploy & Migrate
     needs: build-and-push
     runs-on: ubuntu-latest
 
     steps:
-      - name: Connect & Deploy to VPS
+      - name: Copy Migrations to VPS
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: 146.190.102.54
+          username: ${{ secrets.VPS_USER }}
+          port: 9201
+          key: ${{ secrets.VPS_PRIVATE_KEY }}
+          source: "migrations"
+          target: "/home/hosea/deploy"
+
+      - name: SSH Deploy to VPS
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: 146.190.102.54
-          username: hosea
+          username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_PRIVATE_KEY }}
           port: 9201
           script: |
+            cd /home/hosea/deploy
+
+            echo "✅ Login GHCR"
             docker login ghcr.io -u ${{ github.actor }} --password ${{ secrets.HOSEA_TOKEN }}
-            docker pull ghcr.io/hn721/fgo24-be-tickitz:latest
-            echo "Stopping existing container..."
-            docker compose down || true
-            echo "Starting Docker Compose..."
-            docker compose up -d
+
+            echo "✅ Pull latest images"
+            docker compose pull
+
+            echo "✅ Start DB & Redis"
+            docker compose up -d db redis
+
+            echo "⏳ Wait for Postgres"
+            sleep 10
+
+            echo "✅ Run migrations"
+            docker compose run --rm migration
+
+            echo "✅ Start App"
+            docker compose up -d app
+
+            echo "✅ Deploy Complete"
