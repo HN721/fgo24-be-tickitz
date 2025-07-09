@@ -29,6 +29,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
       - name: Copy Migrations to VPS
         uses: appleboy/scp-action@v0.1.4
         with:
