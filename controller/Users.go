@@ -99,7 +99,6 @@ func Register(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, utils.Response{
 		Success: true,
 		Message: "OK",
-		Results: users,
 	})
 }
 
@@ -141,7 +140,7 @@ func Login(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, utils.Response{
 		Success: true,
 		Message: "ok",
-		Results: result,
+		Results: result.Username,
 		Token:   generateToken,
 	})
 }
