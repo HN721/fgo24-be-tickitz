@@ -98,6 +98,35 @@ func GetNowShoinfMovies(ctx *gin.Context) {
 
 }
 
+// @Summary Get One Movie
+// @Description Get Detail Movie
+// @Tags Movies
+// @Produce json
+// @Accept json
+// @Param id path int true "Movie ID"
+// @Success 200 {object} utils.Response{results=[]models.Movies}
+// @Failure 500 {object} utils.Response
+// @Router /movie/detail/{id} [get]
+func GetMovieById(ctx *gin.Context) {
+	movieId := ctx.Param("id")
+	id, _ := strconv.Atoi(movieId)
+
+	result, err := models.GetMovieById(id)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.Response{
+			Success: false,
+			Message: "Failed to get Movie",
+			Error:   err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, utils.Response{
+		Success: true,
+		Message: "Sucessfully Get Movie Data",
+		Results: result,
+	})
+}
+
 // @Summary Get Upcoming movies
 // @Description Retrieve all movies with search and pagination
 // @Tags Movies

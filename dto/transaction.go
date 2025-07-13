@@ -15,7 +15,7 @@ type TransactionResponses struct {
 	PriceTotal        int      `json:"priceTotal"`
 	UserId            int      `json:"userId"`
 	MovieTitle        string   `json:"movieTitle"`
-	CinemaName        string   `json:"cinemaName"`
+	CinemaId          int      `json:"cinemaId"`
 	PaymentMethodName string   `json:"paymentMethodName"`
 	CustomerName      string   `json:"customerName" db:"costumer_name"`
 	CustomerPhone     string   `json:"customerPhone" db:"costumer_phone"`

@@ -11,6 +11,7 @@ func movieRoute(r *gin.RouterGroup) {
 	r.GET("/upcoming", controller.GetUpcomingMovies)
 	r.GET("/now-showing", controller.GetNowShoinfMovies)
 	r.GET("/filter", controller.GetFilterMovie)
+	r.GET("/detail/:id", controller.GetMovieById)
 
 	r.GET("", controller.GetMovies)
 	r.POST("", middleware.AdminMiddleware(), controller.CreateMovies)

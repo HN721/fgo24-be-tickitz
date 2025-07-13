@@ -22,6 +22,11 @@ func VerifyToken(tokens string) (*jwt.Token, error) {
 }
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		if c.Request.Method == http.MethodOptions {
+			c.Next()
+			return
+		}
+
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{

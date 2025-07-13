@@ -17,6 +17,8 @@ type CreateTransactionRequest struct {
 	MovieId         int                               `json:"movieId"`
 	CinemaId        int                               `json:"cinemaId"`
 	PaymentMethodId int                               `json:"paymentMethodId"`
+	Days            string                            `json:"days"` // tanggal penayangan
+	Time            string                            `json:"time"` // jam penayangan
 	Details         []models.TransactionDetailRequest `json:"details"`
 }
 
@@ -44,10 +46,22 @@ func CreateTransaction(ctx *gin.Context) {
 		})
 		return
 	}
+	parsedDate, err := time.Parse("02-01-2006", req.Days)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.Response{
+			Success: false,
+			Message: "Invalid date format, must be DD-MM-YYYY",
+			Error:   err.Error(),
+		})
+		return
+	}
 
+	parsedTime, err := time.Parse("15:04", req.Time)
+	if err != nil {
+	}
 	transaction := models.Transaction{
-		Time:            time.Now(),
-		Date:            time.Now(),
+		Time:            parsedTime,
+		Date:            parsedDate,
 		PriceTotal:      req.PriceTotal,
 		Location:        req.Location,
 		MovieId:         req.MovieId,
@@ -55,7 +69,7 @@ func CreateTransaction(ctx *gin.Context) {
 		PaymentMethodId: req.PaymentMethodId,
 	}
 	id := userId.(int)
-	err := models.CreateTransactionWithDetails(transaction, req.Details, id)
+	err = models.CreateTransactionWithDetails(transaction, req.Details, id)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.Response{
 			Success: false,

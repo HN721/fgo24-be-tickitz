@@ -191,7 +191,7 @@ WHERE t.id = $1
 
 		UserId:            tr.UserId,
 		MovieTitle:        tr.MovieTitle,
-		CinemaName:        tr.CinemaName,
+		CinemaId:          tr.CinemaId, // dari cinemaId
 		PaymentMethodName: tr.PaymentMethodName,
 	}
 
@@ -237,7 +237,6 @@ LEFT JOIN payment_method pm ON t.id_payment_method = pm.id
 			&tr.MovieId,
 			&tr.MovieTitle,
 			&tr.CinemaId,
-			&tr.CinemaName,
 			&tr.PaymentMethodId,
 			&tr.PaymentMethodName,
 		)
@@ -253,7 +252,7 @@ LEFT JOIN payment_method pm ON t.id_payment_method = pm.id
 			PriceTotal:        tr.PriceTotal,
 			UserId:            tr.UserId,
 			MovieTitle:        tr.MovieTitle,
-			CinemaName:        tr.CinemaName,
+			CinemaId:          tr.CinemaId, // dari cinemaId
 			PaymentMethodName: tr.PaymentMethodName,
 		})
 	}
@@ -271,7 +270,7 @@ func GetAllTransactions() ([]dto.TransactionResponses, error) {
 	SELECT 
 	t.id, t.time, t.date, t.price_total, t.location, t.user_id, 
 	t.movie_id, m.title as movie_title,
-	t.id_cinema, c.name as cinema_name,
+	t.id_cinema,
 	t.id_payment_method, pm.name as payment_method_name,
 	MAX(td.costumer_name) AS costumer_name,
 	MAX(td.costumer_phone) AS costumer_phone,
@@ -284,7 +283,7 @@ LEFT JOIN transaction_detail td ON t.id = td.id_transaction
 GROUP BY 
 	t.id, t.time, t.date, t.price_total, t.location, t.user_id, 
 	t.movie_id, m.title,
-	t.id_cinema, c.name,
+	t.id_cinema,
 	t.id_payment_method, pm.name
 ORDER BY t.date DESC, t.time DESC
 
@@ -309,7 +308,6 @@ ORDER BY t.date DESC, t.time DESC
 			&tr.MovieId,
 			&tr.MovieTitle,
 			&tr.CinemaId,
-			&tr.CinemaName,
 			&tr.PaymentMethodId,
 			&tr.PaymentMethodName,
 			&tr.CustomerName,
@@ -328,7 +326,7 @@ ORDER BY t.date DESC, t.time DESC
 			PriceTotal:        tr.PriceTotal,
 			UserId:            tr.UserId,
 			MovieTitle:        tr.MovieTitle,
-			CinemaName:        tr.CinemaName,
+			CinemaId:          tr.CinemaId,
 			PaymentMethodName: tr.PaymentMethodName,
 			CustomerName:      tr.CustomerName,
 			CustomerPhone:     tr.CustomerPhone,

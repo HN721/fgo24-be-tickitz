@@ -117,7 +117,9 @@ definitions:
       priceTotal:
         type: integer
       seat:
-        type: string
+        items:
+          type: string
+        type: array
       time:
         type: string
       userId:
@@ -902,6 +904,38 @@ paths:
       summary: Update Actor
       tags:
       - Actors
+  /movie/detail/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get Detail Movie
+      parameters:
+      - description: Movie ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                results:
+                  items:
+                    $ref: '#/definitions/models.Movies'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Get One Movie
+      tags:
+      - Movies
   /movie/director:
     get:
       description: Retrieve all director

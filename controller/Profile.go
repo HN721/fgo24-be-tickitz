@@ -4,11 +4,13 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"os"
 	"weeklytickits/dto"
 	"weeklytickits/models"
 	"weeklytickits/utils"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 func toNullString(s *string) sql.NullString {
@@ -60,10 +62,29 @@ func GetUserProfile(ctx *gin.Context) {
 // @Security Token
 // @Router /profile [patch]
 func UpdateProfileByUserId(ctx *gin.Context) {
+	godotenv.Load()
 	userId, _ := ctx.Get("userID")
 	var req dto.Profile
 
 	err := ctx.ShouldBind(&req)
+	file, fileErr := ctx.FormFile("picture")
+	if fileErr == nil && file.Filename != "" {
+		uploadPath := os.Getenv("UPLOAD_PATH")
+		fileName := fmt.Sprintf("%s-%s", req.Fullname, file.Filename)
+		savePath := fmt.Sprintf("./%s/%s", uploadPath, fileName)
+
+		err = ctx.SaveUploadedFile(file, savePath)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, utils.Response{
+				Success: false,
+				Message: "Failed to save uploaded image",
+				Error:   err.Error(),
+			})
+			return
+		}
+
+		req.Image = fileName
+	}
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, utils.Response{
 			Success: false,

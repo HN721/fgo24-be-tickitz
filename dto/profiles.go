@@ -3,7 +3,7 @@ package dto
 type Profile struct {
 	Id       int    `json:"id"`
 	Fullname string `json:"fullname,omitempty"`
-	Phone    string `json:"phoneNumber,omitempty" db:"phone_number"`
+	Phone    string `json:"phone_number,omitempty" db:"phone_number"`
 	Image    string `json:"image,omitempty" db:"profile_image"`
 	IdUser   int    `json:"id_user,omitempty" db:"id_user"`
 }
