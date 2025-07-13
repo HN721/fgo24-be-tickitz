@@ -1,8 +1,14 @@
 package controller
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
+	"time"
 	"weeklytickits/models"
 	"weeklytickits/utils"
 
@@ -18,6 +24,14 @@ import (
 // @Failure 500 {object} utils.Response
 // @Router /movie/upcoming [get]
 func GetUpcomingMovies(ctx *gin.Context) {
+	cacheKey := "upcoming_movies"
+
+	cached, err := utils.RedisClient.Get(context.Background(), cacheKey).Result()
+	if err == nil && cached != "" {
+		ctx.Data(http.StatusOK, "application/json", []byte(cached))
+		return
+	}
+
 	data, err := models.GetUpcomingMovies()
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.Response{
@@ -28,12 +42,16 @@ func GetUpcomingMovies(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, utils.Response{
+	response := utils.Response{
 		Success: true,
 		Message: "OK",
 		Results: data,
-	})
+	}
 
+	jsonData, _ := json.Marshal(response)
+	utils.RedisClient.Set(context.Background(), cacheKey, jsonData, 5*time.Minute)
+
+	ctx.JSON(http.StatusOK, response)
 }
 
 // @Summary Get Movies By Genre
@@ -80,6 +98,17 @@ func GetFilterMovie(ctx *gin.Context) {
 // @Failure 500 {object} utils.Response
 // @Router /movie/now-showing [get]
 func GetNowShoinfMovies(ctx *gin.Context) {
+	cacheKey := ctx.Request.RequestURI
+
+	// Cek apakah data ada di Redis
+	cachedData, err := utils.RedisClient.Get(context.Background(), cacheKey).Result()
+	if err == nil && cachedData != "" {
+		// Jika ditemukan di cache, langsung kirim data dari Redis
+		ctx.Data(http.StatusOK, "application/json", []byte(cachedData))
+		return
+	}
+
+	// Jika tidak ada di cache, ambil dari database
 	data, err := models.NowShowingMovies()
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.Response{
@@ -90,12 +119,20 @@ func GetNowShoinfMovies(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, utils.Response{
+	// Buat JSON response untuk disimpan di Redis
+	response := utils.Response{
 		Success: true,
 		Message: "OK",
 		Results: data,
-	})
+	}
+	jsonData, err := json.Marshal(response)
+	if err == nil {
+		// Simpan ke Redis selama 5 menit
+		utils.RedisClient.Set(context.Background(), cacheKey, jsonData, 5*time.Minute)
+	}
 
+	// Kembalikan data ke client
+	ctx.JSON(http.StatusOK, response)
 }
 
 // @Summary Get One Movie
@@ -140,14 +177,26 @@ func GetMovieById(ctx *gin.Context) {
 // @Security Token
 // @Router /movie [get]
 func GetMovies(ctx *gin.Context) {
+	cacheKey := ctx.Request.RequestURI
+
+	// Cek apakah ada data di Redis
+	cached := utils.RedisClient.Get(context.Background(), cacheKey)
+	if cached.Err() == nil {
+		// Jika data ada di Redis, kembalikan langsung ke client
+		ctx.Data(http.StatusOK, "application/json", []byte(cached.Val()))
+		return
+	}
+
+	// Ambil query params
 	search := ctx.Query("search")
 	genre := ctx.Query("genre")
 	page := ctx.DefaultQuery("page", "1")
-	limit := ctx.DefaultQuery("limit", "5")
+	limit := ctx.DefaultQuery("limit", "10")
 
 	pageInt, _ := strconv.Atoi(page)
 	limitInt, _ := strconv.Atoi(limit)
 
+	// Ambil data dari database
 	movies, err := models.GetAllMovies(search, genre, pageInt, limitInt)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.Response{
@@ -158,11 +207,20 @@ func GetMovies(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, utils.Response{
+	// Encode response ke JSON string untuk simpan di Redis
+	response := utils.Response{
 		Success: true,
 		Message: "Success get all movies",
 		Results: movies,
-	})
+	}
+	jsonBytes, err := json.Marshal(response)
+	if err == nil {
+		// Simpan ke Redis dengan TTL (misalnya 5 menit)
+		utils.RedisClient.Set(context.Background(), cacheKey, string(jsonBytes), 5*time.Minute)
+	}
+
+	// Kembalikan response ke client
+	ctx.JSON(http.StatusOK, response)
 }
 
 // @Summary Create
@@ -178,16 +236,58 @@ func GetMovies(ctx *gin.Context) {
 func CreateMovies(ctx *gin.Context) {
 	var req models.MoviesReq
 
-	err := ctx.ShouldBind(&req)
-	if err != nil {
+	posterFile, posterErr := ctx.FormFile("poster")
+	backgroundFile, backgroundErr := ctx.FormFile("background")
+
+	if err := ctx.ShouldBind(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, utils.Response{
 			Success: false,
-			Message: "Error",
+			Message: "Invalid input",
 			Error:   err.Error(),
 		})
 		return
 	}
-	err = models.InsertMovies(req)
+
+	uploadPath := os.Getenv("UPLOAD_PATH")
+	if uploadPath == "" {
+		uploadPath = "uploads/movies"
+	}
+
+	if _, err := os.Stat(uploadPath); os.IsNotExist(err) {
+		os.MkdirAll(uploadPath, os.ModePerm)
+	}
+
+	if posterErr == nil && posterFile != nil {
+		posterName := fmt.Sprintf("poster-%d-%s", time.Now().Unix(), posterFile.Filename)
+		savePath := filepath.Join(uploadPath, posterName)
+
+		if err := ctx.SaveUploadedFile(posterFile, savePath); err != nil {
+			ctx.JSON(http.StatusInternalServerError, utils.Response{
+				Success: false,
+				Message: "Failed to upload poster",
+				Error:   err.Error(),
+			})
+			return
+		}
+		req.Poster = posterName
+	}
+
+	if backgroundErr == nil && backgroundFile != nil {
+		bgName := fmt.Sprintf("bg-%d-%s", time.Now().Unix(), backgroundFile.Filename)
+		savePath := filepath.Join(uploadPath, bgName)
+
+		if err := ctx.SaveUploadedFile(backgroundFile, savePath); err != nil {
+			ctx.JSON(http.StatusInternalServerError, utils.Response{
+				Success: false,
+				Message: "Failed to upload background",
+				Error:   err.Error(),
+			})
+			return
+		}
+		req.Background = bgName
+	}
+
+	err := models.InsertMovies(req)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.Response{
 			Success: false,
@@ -286,20 +386,36 @@ func DeleteMovies(ctx *gin.Context) {
 // @Failure 500 {object} utils.Response
 // @Router /movie/genre [get]
 func GetGenre(ctx *gin.Context) {
+	cacheKey := "genres"
+
+	// Coba ambil dari cache
+	cachedData, err := utils.RedisClient.Get(context.Background(), cacheKey).Result()
+	if err == nil && cachedData != "" {
+		ctx.Data(http.StatusOK, "application/json", []byte(cachedData))
+		return
+	}
+
+	// Ambil dari database jika tidak ada di Redis
 	data, err := models.GenreMovies()
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, utils.Response{
 			Success: false,
-			Message: "Error",
+			Message: "Gagal mengambil genre",
 			Error:   err.Error(),
 		})
 		return
 	}
-	ctx.JSON(http.StatusOK, utils.Response{
+
+	// Simpan ke Redis
+	response := utils.Response{
 		Success: true,
 		Message: "OK",
 		Results: data,
-	})
+	}
+	jsonData, _ := json.Marshal(response)
+	utils.RedisClient.Set(context.Background(), cacheKey, jsonData, 5*time.Minute)
+
+	ctx.JSON(http.StatusOK, response)
 }
 
 // @Summary Create Genre
