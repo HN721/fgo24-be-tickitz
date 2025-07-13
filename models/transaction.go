@@ -206,16 +206,33 @@ func GetTransactionsByUserId(userId int) ([]dto.TransactionResponses, error) {
 
 	query := `
 	SELECT 
-	t.id, t.time, t.date, t.price_total, t.location, t.user_id, 
-	t.movie_id, m.title as movie_title,
-	t.id_cinema, c.name as cinema_name,
-	t.id_payment_method, pm.name as payment_method_name
-FROM transactions t
-LEFT JOIN movies m ON t.movie_id = m.id
-LEFT JOIN cinema c ON t.id_cinema = c.id
-LEFT JOIN payment_method pm ON t.id_payment_method = pm.id
-		WHERE t.user_id = $1
-		ORDER BY t.date DESC, t.time DESC
+		t.id, 
+		t.time, 
+		t.date, 
+		t.price_total, 
+		t.location, 
+		t.user_id, 
+		t.movie_id, 
+		m.title AS movie_title,
+		t.id_cinema, 
+		c.name AS cinema_name,
+		t.id_payment_method, 
+		pm.name AS payment_method_name,
+		MAX(td.costumer_name) AS costumer_name,
+		MAX(td.costumer_phone) AS costumer_phone,
+		ARRAY_AGG(td.seat) AS seats
+	FROM transactions t
+	LEFT JOIN movies m ON t.movie_id = m.id
+	LEFT JOIN cinema c ON t.id_cinema = c.id
+	LEFT JOIN payment_method pm ON t.id_payment_method = pm.id
+	LEFT JOIN transaction_detail td ON td.id_transaction = t.id
+	WHERE t.user_id = $1
+	GROUP BY 
+		t.id, t.time, t.date, t.price_total, t.location, t.user_id, 
+		t.movie_id, m.title,
+		t.id_cinema, c.name,
+		t.id_payment_method, pm.name
+	ORDER BY t.date DESC, t.time DESC
 	`
 
 	rows, err := conn.Query(context.Background(), query, userId)
@@ -237,9 +254,14 @@ LEFT JOIN payment_method pm ON t.id_payment_method = pm.id
 			&tr.MovieId,
 			&tr.MovieTitle,
 			&tr.CinemaId,
+			&tr.CinemaName,
 			&tr.PaymentMethodId,
 			&tr.PaymentMethodName,
+			&tr.CustomerName,
+			&tr.CustomerPhone,
+			&tr.Seat,
 		)
+
 		if err != nil {
 			return nil, err
 		}
@@ -252,13 +274,17 @@ LEFT JOIN payment_method pm ON t.id_payment_method = pm.id
 			PriceTotal:        tr.PriceTotal,
 			UserId:            tr.UserId,
 			MovieTitle:        tr.MovieTitle,
-			CinemaId:          tr.CinemaId, // dari cinemaId
+			CinemaId:          tr.CinemaId,
 			PaymentMethodName: tr.PaymentMethodName,
+			CustomerName:      tr.CustomerName,
+			CustomerPhone:     tr.CustomerPhone,
+			Seat:              tr.Seat, // langsung []string dari SQL
 		})
 	}
 
 	return responses, nil
 }
+
 func GetAllTransactions() ([]dto.TransactionResponses, error) {
 	conn, err := utils.DBConnect()
 	if err != nil {

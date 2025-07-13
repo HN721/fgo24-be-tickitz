@@ -11,5 +11,5 @@ func transactionRoutes(r *gin.RouterGroup) {
 
 	r.POST("/", middleware.AuthMiddleware(), controller.CreateTransaction)
 	r.GET("/", middleware.AuthMiddleware(), controller.GetAllTransactions)
-
+	r.GET("/user", middleware.AuthMiddleware(), controller.GetTransactionsByUserID)
 }

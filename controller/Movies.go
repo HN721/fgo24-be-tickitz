@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 	"weeklytickits/models"
 	"weeklytickits/utils"
@@ -236,26 +237,38 @@ func GetMovies(ctx *gin.Context) {
 func CreateMovies(ctx *gin.Context) {
 	var req models.MoviesReq
 
-	posterFile, posterErr := ctx.FormFile("poster")
-	backgroundFile, backgroundErr := ctx.FormFile("background")
+	// Ambil field manual karena multipart tidak bisa dibind langsung
+	req.Title = ctx.PostForm("title")
+	req.ReleaseDate = ctx.PostForm("releaseDate")
+	req.Synopsis = ctx.PostForm("description")
+	req.Duration, _ = strconv.Atoi(ctx.PostForm("duration"))
+	req.Price, _ = strconv.Atoi(ctx.PostForm("price"))
 
-	if err := ctx.ShouldBind(&req); err != nil {
+	// Ambil dan parse array JSON dari frontend
+	json.Unmarshal([]byte(ctx.PostForm("casts")), &req.Casts)
+	json.Unmarshal([]byte(ctx.PostForm("genres")), &req.Genres)
+	json.Unmarshal([]byte(ctx.PostForm("directors")), &req.Directors)
+
+	// Validasi input penting
+	if strings.TrimSpace(req.Title) == "" {
 		ctx.JSON(http.StatusBadRequest, utils.Response{
 			Success: false,
 			Message: "Invalid input",
-			Error:   err.Error(),
+			Error:   "Judul Tidak Boleh Kosong",
 		})
 		return
 	}
 
+	// Ambil file
+	posterFile, posterErr := ctx.FormFile("poster")
+	backgroundFile, backgroundErr := ctx.FormFile("background")
+
+	// Simpan file
 	uploadPath := os.Getenv("UPLOAD_PATH")
 	if uploadPath == "" {
 		uploadPath = "uploads/movies"
 	}
-
-	if _, err := os.Stat(uploadPath); os.IsNotExist(err) {
-		os.MkdirAll(uploadPath, os.ModePerm)
-	}
+	os.MkdirAll(uploadPath, os.ModePerm)
 
 	if posterErr == nil && posterFile != nil {
 		posterName := fmt.Sprintf("poster-%d-%s", time.Now().Unix(), posterFile.Filename)
@@ -287,6 +300,7 @@ func CreateMovies(ctx *gin.Context) {
 		req.Background = bgName
 	}
 
+	// Insert ke DB
 	err := models.InsertMovies(req)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.Response{
@@ -296,9 +310,10 @@ func CreateMovies(ctx *gin.Context) {
 		})
 		return
 	}
+
 	ctx.JSON(http.StatusCreated, utils.Response{
 		Success: true,
-		Message: "OK",
+		Message: "Movie berhasil ditambahkan",
 		Results: req,
 	})
 }

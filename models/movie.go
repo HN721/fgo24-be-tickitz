@@ -23,17 +23,16 @@ type Movies struct {
 	Directors   []string  `json:"directors" `
 }
 type MoviesReq struct {
-	Id          int       `json:"id,omitempty" db:"id"`
-	Title       string    `json:"title" db:"title"`
-	Synopsis    string    `json:"synopsis" db:"synopsis"`
-	Background  string    ` json:"background" db:"background"`
-	Poster      string    ` json:"poster" db:"poster"`
-	ReleaseDate time.Time ` json:"releaseDate" db:"release_date"`
-	Duration    int       `json:"duration" db:"duration"`
-	Price       int       `json:"price" db:"price"`
-	Genres      []int     `json:"genres" `
-	Casts       []int     `json:"casts" `
-	Directors   []int     `json:"directors" `
+	Title       string `form:"title" json:"title"`
+	ReleaseDate string `form:"releaseDate" json:"releaseDate"`
+	Duration    int    `form:"duration" json:"duration"`
+	Synopsis    string `form:"description" json:"description"`
+	Price       int    `form:"price" json:"price"`
+	Poster      string `form:"poster"`
+	Background  string `form:"background"`
+	Casts       []int  `form:"casts[]"`
+	Genres      []int  `form:"genres[]"`
+	Directors   []int  `form:"directors[]"`
 }
 type Genres struct {
 	Id   int    `json:"id" db:"id"`

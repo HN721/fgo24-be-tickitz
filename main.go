@@ -30,6 +30,8 @@ func main() {
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
+	r.Static("/uploads", "./uploads")
+
 	routers.CombineRouter(r)
 	r.Run(fmt.Sprintf(":%s", os.Getenv("APP_PORT")))
 }

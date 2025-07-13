@@ -162,20 +162,10 @@ func GetTransactionByID(ctx *gin.Context) {
 // @Success 200 {object} utils.Response{results=[]dto.TransactionResponses}
 // @Failure 400 {object} utils.Response
 // @Failure 500 {object} utils.Response
-// @Router /trx/user/{id} [get]
+// @Router /trx/user [get]
 func GetTransactionsByUserID(ctx *gin.Context) {
-	userParam := ctx.Param("id")
-	userId, err := strconv.Atoi(userParam)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, utils.Response{
-			Success: false,
-			Message: "Invalid User ID parameter",
-			Error:   err.Error(),
-		})
-		return
-	}
-
-	data, err := models.GetTransactionsByUserId(userId)
+	userId, _ := ctx.Get("userID")
+	data, err := models.GetTransactionsByUserId(userId.(int))
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.Response{
 			Success: false,
