@@ -16,5 +16,6 @@ FROM alpine:3.22
 
 WORKDIR /app
 COPY --from=builder /buildapp/goapp /app/goapp
+COPY --from=builder /buildapp/seed_tmdb /app/seed_tmdb
 
 ENTRYPOINT ["/app/goapp"]
