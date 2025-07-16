@@ -3,6 +3,8 @@ services:
      image: ghcr.io/hn721/fgo24-be-tickitz:latest
      ports:
       - 9203:8080
+     volumes:
+      - data_uploads:/uploads
      networks:
       - netapp
   db:
@@ -23,5 +25,6 @@ services:
 volumes:
   data_postgres:
   data_redis:
+  data_uploads:
 networks:
   netapp:
