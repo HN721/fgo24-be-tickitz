@@ -3,6 +3,12 @@ services:
      image: ghcr.io/hn721/fgo24-be-tickitz:latest
      ports:
       - 9203:8080
+     environment:
+      PGHOST: db
+      PGPORT: "5432"
+      PGUSER: postgres
+      PGPASSWORD: "721"
+      PGDATABASE: postgres
      volumes:
       - data_uploads:/uploads
      networks:
