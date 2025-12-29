@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"time"
 	"weeklytickits/routers"
 
@@ -33,5 +32,5 @@ func main() {
 	r.Static("/uploads", "./uploads")
 
 	routers.CombineRouter(r)
-	r.Run(fmt.Sprintf(":%s", os.Getenv("APP_PORT")))
+	r.Run(fmt.Sprintf(":8080"))
 }

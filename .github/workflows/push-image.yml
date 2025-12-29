@@ -54,7 +54,6 @@ jobs:
 
             echo "✅ Login GHCR"
             docker login ghcr.io -u ${{ github.actor }} --password ${{ secrets.HOSEA_TOKEN }}
-
             echo "✅ Pull latest images"
             docker compose pull
 
